@@ -1,0 +1,50 @@
+# ------------------
+# Maven-related
+# ------------------
+/target/
+/.mvn/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Eclipse/IntelliJ/VSCode IDE
+*.iml
+.idea/
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+
+# Mac system files
+.DS_Store
+
+# Logs and temp files
+*.log
+logs/
+*.tmp
+*.swp
+
+# OS generated
+ehthumbs.db
+Thumbs.db
+Icon?
+
+# Java
+*.class
+
+# Environment & security
+.env
+*.key
+*.pem
+*.jks
+*.p12
+
+# VS Code Java extension settings
+.vscode/
+
+# Database dumps (if any)
+*.sql
+
+# Ignore user-specific files
+*.bak
+*.orig
