@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Purchase Successful</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #28a745;
+            font-size: 28px;
+        }
+
+        p {
+            font-size: 18px;
+            margin: 20px 0;
+        }
+
+        .btn-container {
+            margin-top: 20px;
+        }
+
+        a {
+            text-decoration: none;
+            color: white;
+            background-color: #007bff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: inline-block;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        a:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Purchase Successful!</h1>
+    <p>Thank you for your purchase. You have successfully bought the ticket.</p>
+    <p><strong>Event:</strong> <span th:text="${event.event_name}"></span></p>
+    <p><strong>Ticket Description:</strong> <span th:text="${ticket.desc}"></span></p>
+    <p><strong>Price:</strong> $<span th:text="${ticket.price}"></span></p>
+    <div class="btn-container">
+        <a th:href="@{'/event/' + ${event.event_id} + '/Tickets'}">Back to Tickets Page</a>
+    </div>
+</div>
+</body>
+</html>

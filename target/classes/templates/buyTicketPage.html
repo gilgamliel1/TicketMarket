@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Ticket</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        .details {
+            margin-bottom: 20px;
+        }
+
+        .details p {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        a, button {
+            text-decoration: none;
+            color: white;
+            background-color: #007bff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+            display: inline-block;
+            min-width: 150px;
+        }
+
+        a:hover, button:hover {
+            background-color: #0056b3;
+        }
+
+        .modify-btn {
+            background-color: #28a745;
+        }
+
+        .modify-btn:hover {
+            background-color: #218838;
+        }
+
+        .back-btn {
+            background-color: #6c757d;
+        }
+
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Buy Ticket</h1>
+
+    <!-- Error Message -->
+    <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+    <div class="details">
+        <h2>Event Details</h2>
+        <p><strong>Event Name:</strong> <span th:text="${event.event_name}"></span></p>
+        <p><strong>Event Location:</strong> <span th:text="${event.eventLoc}"></span></p>
+        <p><strong>Event Date:</strong> <span th:text="${event.event_date}"></span></p>
+    </div>
+
+    <div class="details">
+        <h2>Ticket Details</h2>
+        <p><strong>Ticket Price:</strong> $<span th:text="${ticket.price}"></span></p>
+        <p><strong>Ticket Description:</strong> <span th:text="${ticket.desc}"></span></p>
+        <p><strong>Status:</strong> <span th:text="${ticket.status}"></span></p>
+    </div>
+
+    <div class="btn-container">
+
+        <!-- Buy Ticket Button -->
+        <a th:href="@{'/event/' + ${event.event_id} + '/Tickets'}" class="back-btn">Back to Tickets</a>
+
+        <div th:if="${ticket.seller_id != null and loggedInUser != null and ticket.seller_id == loggedInUser.user_id}">
+            <a th:href="@{'/event/' + ${event.event_id} + '/Tickets/' + ${ticket.ticket_id} + '/modify'}" class="modify-btn">Modify Ticket</a>
+        </div>
+        <form th:action="@{'/event/' + ${event.event_id} + '/Tickets/' + ${ticket.ticket_id} + '/processBuyingTicket'}" method="POST">
+            <button type="submit">Buy Ticket</button>
+        </form>
+
+        <!-- Back to Tickets Button -->
+    </div>
+</div>
+</body>
+</html>

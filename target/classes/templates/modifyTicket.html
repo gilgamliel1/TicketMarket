@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Ticket</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #28a745;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px; /* Adds spacing between buttons */
+            margin-top: 20px;
+            flex-wrap: wrap; /* Ensures responsiveness */
+        }
+
+        button, a {
+            text-decoration: none;
+            color: white;
+            background-color: #28a745;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+            min-width: 150px; /* Ensures consistent button width */
+        }
+
+        button:hover, a:hover {
+            background-color: #218838;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        .back-btn {
+            background-color: #007bff;
+        }
+
+        .back-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Manage Ticket</h1>
+
+    <!-- Error Message -->
+    <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+    <!-- Ticket Form -->
+    <form th:action="@{'/event/' + ${event.event_id} + '/Tickets/' + ${ticket.ticket_id} + '/ProcessModify'}" method="POST">
+        <!-- Hidden field to specify the action -->
+        <input type="hidden" name="action" value="modify">
+
+        <div class="form-group">
+            <label for="price">Ticket Price</label>
+            <input type="number" id="price" name="price" th:value="${ticket.price}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Ticket Description</label>
+            <textarea id="description" name="description" rows="4" required th:text="${ticket.desc}"></textarea>
+        </div>
+
+        <div class="btn-container">
+            <button type="submit" class="delete-btn" onclick="document.getElementsByName('action')[0].value='delete';">Delete Ticket</button>
+            <button type="submit" class="modify-btn">Modify Ticket</button>
+
+        </div>
+    </form>
+
+    <!-- Back Button -->
+    <div class="btn-container">
+        <a th:href="@{'/event/' + ${event.event_id} + '/Tickets'}" class="back-btn">Back to Tickets</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Event</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f3f4f6;
+            text-align: center;
+        }
+
+        .container {
+            margin: 50px auto;
+            max-width: 400px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input, textarea, select, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: none;
+            height: 80px;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .back-button {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .back-button a {
+            text-decoration: none;
+            color: white;
+            background-color: #6c757d;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button a:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Create New Event</h1>
+
+    <!-- Error message -->
+    <p class="error" th:if="${error}" th:text="${error}"></p>
+
+    <!-- Event creation form -->
+    <form th:action="@{/event/processEvent}" method="POST">
+        <label for="event_name">Event Name:</label>
+        <input type="text" id="event_name" name="event_name" placeholder="Enter event name" required />
+
+        <label for="event_date">Event Date:</label>
+        <input type="datetime-local" id="event_date" name="event_date" required />
+
+        <label for="eventLoc">Event Location:</label>
+        <input type="text" id="eventLoc" name="eventLoc" placeholder="Enter event location" required />
+
+        <label for="event_desc">Event Description:</label>
+        <textarea id="event_desc" name="event_desc" placeholder="Enter event description"></textarea>
+
+        <!-- Tag Dropdown -->
+        <label for="tag">Event Category:</label>
+        <select id="tag" name="tag" required>
+            <option value="Sport">Sport</option>
+            <option value="Parties">Parties</option>
+            <option value="Concert">Concert</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <!-- Submit button -->
+        <button type="submit">Create Event</button>
+    </form>
+
+    <!-- Back to Home button -->
+    <div class="back-button">
+        <a th:href="@{/home}">Back to Home</a>
+    </div>
+</div>
+</body>
+</html>

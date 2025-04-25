@@ -1,0 +1,182 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Signup Form</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-group {
+            position: relative;
+            width: 100%;
+        }
+
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: none;
+            height: 80px;
+        }
+        .eye-icon {
+            width: 24px;
+            height: 24px;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        .eye-icon:hover {
+            opacity: 0.8;
+        }
+
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        .eye-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+            color: #888;
+        }
+
+        .eye-icon:hover {
+            color: #007bff;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .back-button {
+            margin-top: 20px;
+            background-color: #ddd;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .back-button:hover {
+            background-color: #bbb;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+    </style>
+    <script>
+        function togglePassword(fieldId, iconId) {
+            const passwordField = document.getElementById(fieldId);
+            const eyeIcon = document.getElementById(iconId);
+
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                eyeIcon.src = "images/eye-closed.png"; // Update to "eye-closed" image
+                eyeIcon.alt = "Hide password";
+            } else {
+                passwordField.type = "password";
+                eyeIcon.src = "images/eye-open.jpg"; // Update to "eye-open" image
+                eyeIcon.alt = "Show password";
+            }
+        }
+
+    </script>
+</head>
+
+<body>
+<div class="container">
+    <h1>Signup Form</h1>
+
+    <!-- Error message -->
+    <p class="error" th:if="${error}" th:text="${error}"></p>
+
+    <!-- Signup form -->
+    <form th:action="@{/processform}" method="POST">
+        <input type="text" id="username" name="username" placeholder="Enter username" th:value="${username}" required />
+        <input type="text" id="firstName" name="firstName" placeholder="Enter first name" th:value="${firstName}" required />
+        <input type="text" id="lastName" name="lastName" placeholder="Enter last name" th:value="${lastName}" required />
+        <input type="text" id="userIdNumber" name="userIdNumber" placeholder="Enter your ID number" th:value="${userIdNumber}" required />
+        <input type="email" id="email" name="email" placeholder="Enter your email" th:value="${email}" required />
+
+        <!-- Password field with eye icon -->
+        <div class="input-group">
+            <input type="password" id="password" name="password" placeholder="Enter password" th:value="${password}" required />
+            <img class="eye-icon" id="eyePassword" src="images/eye-open.png" onclick="togglePassword('password', 'eyePassword')" alt="Toggle password visibility">
+        </div>
+
+
+        <!-- Verify password field with eye icon -->
+        <div class="input-group">
+            <input type="password" id="verifypassword" name="verifypassword" placeholder="Verify password" th:value="${verifypassword}" required />
+            <img class="eye-icon" id="eyeVerifyPassword" src="images/eye-open.png" onclick="togglePassword('verifypassword', 'eyeVerifyPassword')" alt="Toggle password visibility">
+        </div>
+
+        <textarea id="bio" name="Bio" placeholder="Tell us about yourself" th:text="${bio}"></textarea>
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <!-- Back to Sign In Button -->
+    <form th:action="@{/signin}" method="GET">
+        <button type="submit" class="back-button">Back to Sign In</button>
+    </form>
+</div>
+</body>
+
+</html>

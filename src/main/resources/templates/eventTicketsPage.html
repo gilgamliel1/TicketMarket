@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${event.event_name} + ' Tickets'">Event Tickets</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f8fa;
+            color: #333;
+        }
+
+        .header {
+            padding: 20px;
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .main {
+            padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .event-stats {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .event-details {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .event-stats h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+
+        .event-stats p {
+            font-size: 16px;
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .progress-container {
+            text-align: center;
+        }
+
+        .circular-progress {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(#007bff 0%, #e6e6e6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .tickets-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .ticket-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .ticket-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .ticket-info {
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .ticket-info .description {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .ticket-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        .buy-button {
+            font-size: 14px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        .buy-button:hover {
+            background-color: #218838;
+        }
+
+        .create-ticket-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .chart-container {
+            width: 130px;
+            height: 130px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pie-chart {
+            width: 100%;
+            height: 100%;
+        }
+
+
+        .create-ticket-button:hover {
+            background-color: #0056b3;
+        }
+
+        @media (max-width: 768px) {
+            .event-stats {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .ticket-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .ticket-info {
+                margin-right: 0;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body>
+<!-- Header Section -->
+<div class="header">
+    <h1 th:text="${event.event_name} + ' Tickets'">Event Tickets</h1>
+</div>
+
+<!-- Main Content -->
+<div class="main">
+    <!-- Event Stats Section -->
+    <div class="event-stats">
+        <div class="event-details">
+            <h3>Event Statistics</h3>
+            <p><strong>Available Tickets:</strong> <span th:text="${eventAvailableTicketsCount}">0</span></p>
+            <p><strong>Sold Tickets:</strong> <span th:text="${eventSoldTicketsCount}">0</span></p>
+            <p><strong>Looking for Tickets:</strong> <span th:text="${eventLookingForTicketsCount}">0</span></p>
+        </div>
+        <div class="progress-container">
+            <div class="chart-container">
+                <canvas id="pieChart" class="pie-chart"></canvas>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Replace these variables with actual values from your data
+            const availableTickets = [[${eventAvailableTicketsCount}]] || 0;
+            const soldTickets = [[${eventSoldTicketsCount}]] || 0;
+            const totalTickets = availableTickets + soldTickets;
+
+            // Data for the pie chart
+            const data = {
+                datasets: [{
+                    data: [availableTickets, totalTickets - availableTickets],
+                    backgroundColor: ['#007bff', '#e6e6e6'],
+                    hoverBackgroundColor: ['#0056b3', '#cccccc']
+                }]
+            };
+
+            // Configuration for the pie chart
+            const config = {
+                type: 'pie',
+                data: data,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (tooltipItem) {
+                                    const label = tooltipItem.label || '';
+                                    const value = tooltipItem.raw || 0;
+                                    const percentage = ((value / totalTickets) * 100).toFixed(2);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            // Render the pie chart
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            new Chart(ctx, config);
+        });
+    </script>
+
+
+    <!-- Tickets List Section -->
+    <h2 style="text-align: center; margin-bottom: 20px;">Available Tickets</h2>
+    <div class="tickets-list">
+        <div th:if="${ticketsList.isEmpty()}" style="text-align: center; color: #999;">
+            No available tickets for this event.
+        </div>
+        <div th:each="ticket : ${ticketsList}" class="ticket-card">
+            <div class="ticket-info">
+                <p class="description" th:text="${ticket.desc}">Ticket Description</p>
+                <p><strong>Seller:</strong> <span th:text="${sellerUsernames[ticket.ticket_id]}">Seller</span></p>
+            </div>
+            <div>
+                <p class="ticket-price" th:text="'₪' + ${ticket.price}">₪0</p>
+                <form th:action="@{'/event/' + ${event.event_id} + '/Tickets/' + ${ticket.ticket_id}}" method="GET">
+                    <button type="submit" class="buy-button">Buy</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="text-align: center;">
+        <a th:href="@{'/event/' + ${event.event_id}}" class="create-ticket-button" style="background-color: #6c757d; margin-right: 10px;">Back to Event</a>
+        <a th:href="@{'/event/' + ${event.event_id} + '/Tickets/newTicket'}" class="create-ticket-button">Create New Ticket</a>
+    </div>
+</div>
+</body>
+</html>
