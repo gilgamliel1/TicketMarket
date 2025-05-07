@@ -63,32 +63,21 @@ CREATE TABLE transactions (
     FOREIGN KEY (seller_id) REFERENCES users(user_id)
 );
 
--- Insert 2 example users
+-- Insert example users (with unique IDs and emails)
 INSERT INTO users (
     user_name, user_first_name, user_last_name, user_id_number,
     email, password_hash, profile_picture_url, bio, wallet_balance
 ) VALUES
-(
-    'admin', 'Admin', 'User', '123456789', 'admin@example.com',
-    'admin_hashed_pass', 'https://example.com/profile1.jpg',
-    'System administrator', 45
-),
-(
-    'john_doe', 'John', 'Doe', '987654321', 'john@example.com',
-    'john_hashed_pass', 'https://example.com/profile2.jpg',
-    'Event lover and party goer', 100
-);
+('gil', 'gil', 'gamliel', '123456789', 'admin@example.com', '1234', 'https://example.com/profile1.jpg', 'System administrator', 100),
+('shahar', 'shahar', 'agadi', '987654321', 'john@example.com', '1234', 'https://example.com/profile2.jpg', 'Event lover and party goer', 100),
+('idan', 'Idan', 'Azama', '111222333', 'idan@example.com', '1234', 'https://example.com/profile3.jpg', 'Backend developer', 50),
+('dror', 'Dror', 'Alon', '444555666', 'dror@example.com', '1234', 'https://example.com/profile4.jpg', 'DJ and event host', 75);
 
--- Insert 2 example events
+-- Insert 4 example events
 INSERT INTO events (
     event_name, event_date, event_loc, event_desc, event_owner, tag
 ) VALUES
-(
-    'House Party', '2025-05-02 22:00:00', 'Beer Sheva',
-    'Party at my house', 'admin', 'Parties'
-),
-(
-    'Live Coding Session', '2025-05-10 18:00:00',
-    'Ben-Gurion University, Building 28',
-    'An evening of real-time coding and pizza!', 'john_doe', 'Other'
-);
+('House Party', '2025-05-02 22:00:00', 'Beer Sheva', 'Party at my house', 'gil', 'Parties'),
+('Live Coding Session', '2025-05-10 18:00:00', 'Ben-Gurion University, Building 28', 'An evening of real-time coding and pizza!', 'shahar', 'Other'),
+('Startup Meetup', '2025-05-18 19:00:00', 'Tel Aviv Hub', 'Networking for tech entrepreneurs', 'idan', 'Business'),
+('Beach Festival', '2025-06-01 16:00:00', 'Tel Aviv Beach', 'Music, food, and fun all evening!', 'dror', 'Concert');
