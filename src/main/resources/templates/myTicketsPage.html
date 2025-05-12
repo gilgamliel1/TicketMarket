@@ -50,11 +50,19 @@
 <body>
     <div class="container">
         <h1>My Tickets</h1>
+
+        <!-- Show a message if the user has no tickets -->
+        <p th:if="${#lists.isEmpty(myTickets)}" style="text-align: center; color: gray;">
+            You have no tickets.
+        </p>
+
+        <!-- Show tickets if available -->
         <div th:each="ticket : ${myTickets}" class="ticket-card">
-            <h3 th:text="'Ticket for Event ID: ' + ${ticket.event_id}">Event ID</h3>
+            <h3 th:text="|Ticket for Event ID: ${ticket.event_id}|">Event ID</h3>
             <p><strong>Price:</strong> <span th:text="${ticket.price}">Price</span></p>
             <p><strong>Status:</strong> <span th:text="${ticket.status}">Status</span></p>
-            <p><strong>Serial Key:</strong> <span th:text="${ticket.serial_key}">Serial Key</span></p>
+            <p><strong>Description:</strong> <span th:text="${ticket.desc}">Description</span></p>
+            <p><strong>Serial Key:</strong> <span th:text="${ticket.serialKey}">Serial Key</span></p>
         </div>
     </div>
 </body>

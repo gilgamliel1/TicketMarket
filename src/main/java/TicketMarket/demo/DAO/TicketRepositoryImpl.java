@@ -41,7 +41,7 @@ public class TicketRepositoryImpl implements TicketCustomRepository{
     
     @Override
     public List<Ticket> findBySellerId(int seller_id) {
-        TypedQuery<Ticket> qur = entityManager.createQuery("FROM Ticket WHERE seller_id = :seller_id AND status= 'available' " , Ticket.class);
+        TypedQuery<Ticket> qur = entityManager.createQuery("FROM Ticket WHERE seller_id = :seller_id" , Ticket.class);
         qur.setParameter("seller_id", seller_id);
         return qur.getResultList();
     }
