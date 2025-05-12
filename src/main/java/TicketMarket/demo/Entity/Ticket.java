@@ -23,7 +23,7 @@ public class Ticket {
     @Column(name = "description")
     private String desc ;
     @Column(name = "status")
-    private String status ;
+    private Integer status ;
     @Column(name = "created_at")
     private LocalDateTime localDateTime ;
     @Column(name = "serial_key" , unique = true)
@@ -36,12 +36,12 @@ public class Ticket {
         this.seller_id = -1;
         this.price = -1;
         this.desc = "None";
-        this.status = "None";
+        this.status = 0;
         this.localDateTime = LocalDateTime.now();
         this.serial_key = "None";
     }
 
-    public Ticket(int event_id, int seller_id, int price, String desc, String status , String serial_key ) {
+    public Ticket(int event_id, int seller_id, int price, String desc, int status , String serial_key ) {
         this.ticket_id = 50 ;
         this.event_id = event_id;
         this.seller_id = seller_id;
@@ -98,11 +98,11 @@ public class Ticket {
         this.desc = desc;
     }
 
-    public String getStatus() {
+    public int getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(int status) {
         this.status = status;
     }
 

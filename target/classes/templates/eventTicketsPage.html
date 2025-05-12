@@ -66,19 +66,6 @@
             text-align: center;
         }
 
-        .circular-progress {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: conic-gradient(#007bff 0%, #e6e6e6 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-        }
-
         .tickets-list {
             display: flex;
             flex-direction: column;
@@ -149,19 +136,6 @@
             cursor: pointer;
             margin-top: 20px;
         }
-        .chart-container {
-            width: 130px;
-            height: 130px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .pie-chart {
-            width: 100%;
-            height: 100%;
-        }
-
 
         .create-ticket-button:hover {
             background-color: #0056b3;
@@ -185,7 +159,6 @@
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
 <body>
 <!-- Header Section -->
@@ -210,51 +183,46 @@
         </div>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Replace these variables with actual values from your data
-            const availableTickets = [[${eventAvailableTicketsCount}]] || 0;
-            const soldTickets = [[${eventSoldTicketsCount}]] || 0;
-            const totalTickets = availableTickets + soldTickets;
+document.addEventListener('DOMContentLoaded', () => {
+const availableTickets = [[${eventAvailableTicketsCount}]] || 0;
+    const soldTickets = [[${eventSoldTicketsCount}]] || 0;
+    const totalTickets = availableTickets + soldTickets;
 
-            // Data for the pie chart
-            const data = {
-                datasets: [{
-                    data: [availableTickets, totalTickets - availableTickets],
-                    backgroundColor: ['#007bff', '#e6e6e6'],
-                    hoverBackgroundColor: ['#0056b3', '#cccccc']
-                }]
-            };
+    const data = {
+        datasets: [{
+            data: [availableTickets, totalTickets - availableTickets],
+            backgroundColor: ['#007bff', '#e6e6e6'],
+            hoverBackgroundColor: ['#0056b3', '#cccccc']
+        }]
+    };
 
-            // Configuration for the pie chart
-            const config = {
-                type: 'pie',
-                data: data,
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function (tooltipItem) {
-                                    const label = tooltipItem.label || '';
-                                    const value = tooltipItem.raw || 0;
-                                    const percentage = ((value / totalTickets) * 100).toFixed(2);
-                                    return `${label}: ${value} (${percentage}%)`;
-                                }
-                            }
+    const config = {
+        type: 'pie',
+        data: data,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            const label = tooltipItem.label || '';
+                            const value = tooltipItem.raw || 0;
+                            const percentage = ((value / totalTickets) * 100).toFixed(2);
+                            return `${label}: ${value} (${percentage}%)`;
                         }
                     }
                 }
-            };
+            }
+        }
+    };
 
-            // Render the pie chart
-            const ctx = document.getElementById('pieChart').getContext('2d');
-            new Chart(ctx, config);
-        });
+    const ctx = document.getElementById('pieChart').getContext('2d');
+    new Chart(ctx, config);
+});
     </script>
-
 
     <!-- Tickets List Section -->
     <h2 style="text-align: center; margin-bottom: 20px;">Available Tickets</h2>
@@ -262,7 +230,7 @@
         <div th:if="${ticketsList.isEmpty()}" style="text-align: center; color: #999;">
             No available tickets for this event.
         </div>
-        <div th:each="ticket : ${ticketsList}" class="ticket-card">
+        <div th:each="ticket : ${ticketsList}" th:if="${ticket.status == 1}" class="ticket-card">
             <div class="ticket-info">
                 <p class="description" th:text="${ticket.desc}">Ticket Description</p>
                 <p><strong>Seller:</strong> <span th:text="${sellerUsernames[ticket.ticket_id]}">Seller</span></p>

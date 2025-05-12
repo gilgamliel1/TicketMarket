@@ -43,7 +43,7 @@ CREATE TABLE tickets (
     seller_id INT NOT NULL,
     price INT NOT NULL,
     description VARCHAR(50),
-    status ENUM('for_sale', 'not_for_sale') DEFAULT 'for_sale',
+    status INT DEFAULT 1, -- 1: ticket that can be reselled, 2: ticket for sale 1 time, 3: no for sell ticket
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     serial_key VARCHAR(50) NOT NULL,
     FOREIGN KEY (event_id) REFERENCES events(event_id),

@@ -24,7 +24,7 @@ public class TicketRepositoryImpl implements TicketCustomRepository{
     }
     @Override
     public List<Ticket> availableTicketsByEventId(int eventId) {
-        TypedQuery<Ticket> qur = entityManager.createQuery("FROM Ticket WHERE event_id = :eventId AND status= 'available' ORDER BY price" , Ticket.class);
+        TypedQuery<Ticket> qur = entityManager.createQuery("FROM Ticket WHERE event_id = :eventId AND status = 1  ORDER BY price" , Ticket.class);
         qur.setParameter("eventId", eventId);
         return qur.getResultList();
     }

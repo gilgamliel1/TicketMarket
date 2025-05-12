@@ -100,7 +100,7 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
             // Create tickets for the event
             for (int i = 0; i < ticketCount; i++) {
                 String serialKey = generateSerialKey();
-                Ticket ticket = new Ticket(newEvent.getEvent_id(), temp.getUser_id(), ticketPrice, "Ticket " + (i + 1), "available", serialKey);
+                Ticket ticket = new Ticket(newEvent.getEvent_id(), temp.getUser_id(), ticketPrice, "Ticket " + (i + 1), 1, serialKey);
                 ticketRepository.save(ticket);
                 System.out.println("Ticket created with Serial Key: " + serialKey);
             }
@@ -191,7 +191,7 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
             model.addAttribute("error", "Serial key is not valid.");
             return "newEventTicketForm";
         }
-        Ticket temp = new Ticket(id , user.getUser_id(),  price , description , "available" , serialKey);
+        Ticket temp = new Ticket(id , user.getUser_id(),  price , description , 2 , serialKey);
         // Save the new ticket
         ticketRepository.save(temp);
 
@@ -265,7 +265,7 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
         Transaction transaction = new Transaction(ticket.getTicket_id() , buyer.getUser_id() , seller.getUser_id(),  LocalDateTime.now() , ticket.getPrice());
         buyer.setBalance(buyer.getBalance() - ticket.getPrice());
         seller.setBalance(seller.getBalance() + ticket.getPrice());
-        ticket.setStatus("sold");
+        ticket.setStatus(2);
         transactionRepository.save(transaction);
         ticketRepository.save(ticket);
         userRepository.save(buyer);
