@@ -1,0 +1,61 @@
+<!-- filepath: /Users/gilgamliel/Documents/GitHub/TicketMarket/src/main/resources/templates/myTicketsPage.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Tickets</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f8fa;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .container h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        .ticket-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #fff;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .ticket-card h3 {
+            margin: 0;
+            color: #007bff;
+        }
+
+        .ticket-card p {
+            margin: 5px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Tickets</h1>
+        <div th:each="ticket : ${myTickets}" class="ticket-card">
+            <h3 th:text="'Ticket for Event ID: ' + ${ticket.event_id}">Event ID</h3>
+            <p><strong>Price:</strong> <span th:text="${ticket.price}">Price</span></p>
+            <p><strong>Status:</strong> <span th:text="${ticket.status}">Status</span></p>
+            <p><strong>Serial Key:</strong> <span th:text="${ticket.serial_key}">Serial Key</span></p>
+        </div>
+    </div>
+</body>
+</html>

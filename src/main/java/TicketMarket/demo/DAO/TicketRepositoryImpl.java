@@ -38,4 +38,13 @@ public class TicketRepositoryImpl implements TicketCustomRepository{
         Long count = query.getSingleResult();
         return count == 0; // Returns true if the serial_key exists, false otherwise
     }
+    
+    @Override
+    public List<Ticket> findBySellerId(int seller_id) {
+        TypedQuery<Ticket> qur = entityManager.createQuery("FROM Ticket WHERE seller_id = :seller_id AND status= 'available' " , Ticket.class);
+        qur.setParameter("seller_id", seller_id);
+        return qur.getResultList();
+    }
+
+
 }
