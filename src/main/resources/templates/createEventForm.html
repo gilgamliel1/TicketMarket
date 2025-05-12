@@ -13,6 +13,18 @@
             text-align: center;
         }
 
+        .toggle-section label,
+.toggle-section input {
+    width: 100%;
+}
+
+.toggle-section input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
         .container {
             margin: 50px auto;
             max-width: 400px;
@@ -33,7 +45,7 @@
         form {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px; /* Increased gap for more spacing */
         }
 
         input, textarea, select, button {
@@ -104,23 +116,23 @@
         }
 
         .toggle-section {
-            display: none;
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            background-color: #f9f9f9;
-        }
+    display: none;
+    margin-top: 20px;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+}
 
         .toggle-section label {
             font-size: 14px;
             font-weight: bold;
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 10px; /* Added spacing below labels */
             display: block;
         }
 
         .toggle-section input {
+            margin-bottom: 15px; /* Added spacing below inputs */
             margin-top: 5px;
         }
     </style>
@@ -129,6 +141,30 @@
             const toggleSection = document.getElementById('toggle-section');
             const checkbox = document.getElementById('create-tickets-toggle');
             toggleSection.style.display = checkbox.checked ? 'block' : 'none';
+        }
+    </script>
+    <script>
+        function validateForm(event) {
+            const checkbox = document.getElementById('create-tickets-toggle');
+            const ticketCount = document.getElementById('ticket_count');
+            const ticketPrice = document.getElementById('ticket_price');
+
+            // If the checkbox is checked, validate the additional fields
+            if (checkbox.checked) {
+                if (!ticketCount.value || ticketCount.value <= 0) {
+                    alert("Please enter a valid number of tickets.");
+                    event.preventDefault(); // Prevent form submission
+                    return false;
+                }
+                if (!ticketPrice.value || ticketPrice.value <= 0) {
+                    alert("Please enter a valid ticket price.");
+                    event.preventDefault(); // Prevent form submission
+                    return false;
+                }
+            }
+
+            // Allow form submission if all validations pass
+            return true;
         }
     </script>
 </head>
@@ -140,7 +176,7 @@
     <p class="error" th:if="${error}" th:text="${error}"></p>
 
     <!-- Event creation form -->
-    <form th:action="@{/event/processEvent}" method="POST">
+    <form th:action="@{/event/processEvent}" method="POST" onsubmit="return validateForm(event)">
         <label for="event_name">Event Name:</label>
         <input type="text" id="event_name" name="event_name" placeholder="Enter event name" required />
 
@@ -163,18 +199,18 @@
         </select>
 
         <!-- Toggle button -->
-        <div class="toggle-container">
-            <input type="checkbox" id="create-tickets-toggle" onclick="toggleAdditionalOptions()" />
-            <label for="create-tickets-toggle">Create tickets for this event</label>
+        <div class="toggle-container" style="display: flex; align-items: center; justify-content: space-between;">
+            <label for="create-tickets-toggle" class="toggle-label" style="font-size: 14px; color: #333;">Totally new event</label>
+            <input type="checkbox" id="create-tickets-toggle" name="create-tickets-toggle" onclick="toggleAdditionalOptions()" />
         </div>
 
-        <!-- Additional options for tickets -->
-        <div id="toggle-section" class="toggle-section">
-            <label for="ticket_count">Number of Tickets:</label>
-            <input type="number" id="ticket_count" name="ticket_count" placeholder="Enter number of tickets" min="1" />
+        <!-- Additional ticket options -->
+        <div id="toggle-section" class="toggle-section" style="display: none;">
+            <label for="ticket_count" style="margin-bottom: 10px;">Number of Tickets:</label>
+            <input type="number" id="ticket_count" name="ticket_count" placeholder="Enter number of tickets" style="margin-bottom: 15px;" />
 
-            <label for="ticket_price">Price per Ticket:</label>
-            <input type="number" id="ticket_price" name="ticket_price" placeholder="Enter ticket price" min="1" />
+            <label for="ticket_price" style="margin-bottom: 10px;">Price per Ticket:</label>
+            <input type="number" id="ticket_price" name="ticket_price" placeholder="Enter ticket price" min="1" style="margin-bottom: 15px;" />
         </div>
 
         <!-- Submit button -->

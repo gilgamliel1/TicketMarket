@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +32,10 @@ public class EventController {
     private TicketRepository ticketRepository;
     private UserRepository userRepository;
     private TransactionRepository transactionRepository ;
+        private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyz0123456789";
+    private static final int SERIAL_KEY_LENGTH = 6;
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     @Autowired
     public EventController(EventRepository eventRepository, TicketRepository ticketRepository , UserRepository userRepository , TransactionRepository transactionRepository) {
         this.eventRepository = eventRepository;
@@ -40,29 +45,76 @@ public class EventController {
     }
 
 
+        public static String generateSerialKey() {
+        StringBuilder serialKey = new StringBuilder(SERIAL_KEY_LENGTH);
+        for (int i = 0; i < SERIAL_KEY_LENGTH; i++) {
+            int randomIndex = RANDOM.nextInt(CHARACTERS.length());
+            serialKey.append(CHARACTERS.charAt(randomIndex));
+        }
+        return serialKey.toString();
+    }
+
     @GetMapping("/createEvent")
     public String createEvent(HttpSession session){
         if (session.getAttribute("loggedInUser") == null ) return "redirect:/signin";
         return "createEventForm";
     }
-    @RequestMapping(value = "/processEvent" , method = RequestMethod.POST)
-    public String processEvent(HttpServletRequest http ,  HttpSession session , Model model){
-        if (session.getAttribute("loggedInUser") == null ) return "redirect:/signin";
-        String name = http.getParameter("event_name");
-        LocalDateTime event_time = LocalDateTime.parse(http.getParameter("event_date"));
-        String eventLoc = http.getParameter("eventLoc");
-        String event_desc = http.getParameter("event_desc");
-        String tag = http.getParameter("tag");
-        User temp = (User) session.getAttribute("loggedInUser");
-        if (eventRepository.isEventExist(name))
-        {
-            model.addAttribute("error" , "Event name alreday exist! ");
+@RequestMapping(value = "/processEvent", method = RequestMethod.POST)
+public String processEvent(HttpServletRequest http, HttpSession session, Model model) {
+    if (session.getAttribute("loggedInUser") == null) return "redirect:/signin";
+
+    // Retrieve event details
+    String name = http.getParameter("event_name");
+    LocalDateTime event_time = LocalDateTime.parse(http.getParameter("event_date"));
+    String eventLoc = http.getParameter("eventLoc");
+    String event_desc = http.getParameter("event_desc");
+    String tag = http.getParameter("tag");
+    User temp = (User) session.getAttribute("loggedInUser");
+
+    // Check if the event already exists
+    if (eventRepository.isEventExist(name)) {
+        model.addAttribute("error", "Event name already exists!");
+        return "createEventForm";
+    }
+
+    // Create the event
+    Event newEvent = new Event(name, event_time, eventLoc, event_desc, temp.getUser_name(), tag);
+    eventRepository.save(newEvent); // Ensure the event is saved before creating tickets
+    System.out.println("Event created with ID: " + newEvent.getEvent_id());
+
+    // Check if the "create tickets" checkbox is checked
+    String createTicketsToggle = http.getParameter("create-tickets-toggle");
+    if ("on".equals(createTicketsToggle)) {
+        // Retrieve ticket details
+        String ticketCountStr = http.getParameter("ticket_count");
+        String ticketPriceStr = http.getParameter("ticket_price");
+
+        try {
+            int ticketCount = Integer.parseInt(ticketCountStr);
+            int ticketPrice = Integer.parseInt(ticketPriceStr);
+
+            if (ticketCount <= 0 || ticketPrice <= 0) {
+                model.addAttribute("error", "Ticket count and price must be positive integers.");
+                return "createEventForm";
+            }
+
+            // Create tickets for the event
+            for (int i = 0; i < ticketCount; i++) {
+                String serialKey = generateSerialKey();
+                Ticket ticket = new Ticket(newEvent.getEvent_id(), temp.getUser_id(), ticketPrice, "Ticket " + (i + 1), "available", serialKey);
+                ticketRepository.save(ticket);
+                System.out.println("Ticket created with Serial Key: " + serialKey);
+            }
+        } catch (NumberFormatException e) {
+            model.addAttribute("error", "Invalid ticket count or price. Please enter valid numbers.");
             return "createEventForm";
         }
-        eventRepository.save(new Event(name , event_time , eventLoc , event_desc ,temp.getUser_name() , tag));
-        return "eventCreatedSuccess";
     }
-    @RequestMapping("/success_event_created")
+
+    return "eventCreatedSuccess";
+}
+
+@RequestMapping("/success_event_created")
     public String success_event_created(HttpSession session){
         if (session.getAttribute("loggedInUser") == null ) return "redirect:/signin";
         return "eventCreatedSuccess";
@@ -147,8 +199,8 @@ public class EventController {
         // Redirect to success page
         return "ticketCreateSuccess";
     }
-    public static boolean verifyTicket(String serialKey){
-        return true ;
+    public boolean verifyTicket(String serialKey){
+        return ticketRepository.verifyTicket(serialKey);
     }
     @GetMapping("/{eventId}/Tickets/{TicketId}")
     public String buyEventTicket(@PathVariable int eventId , @PathVariable int TicketId , HttpSession session  , Model model){

@@ -29,4 +29,13 @@ public class TicketRepositoryImpl implements TicketCustomRepository{
         return qur.getResultList();
     }
 
+    @Override
+    public boolean verifyTicket(String serialKey) {
+        TypedQuery<Long> query = entityManager.createQuery(
+            "SELECT COUNT(t) FROM Ticket t WHERE t.serial_key = :serialKey", Long.class
+        );
+        query.setParameter("serialKey", serialKey);
+        Long count = query.getSingleResult();
+        return count == 0; // Returns true if the serial_key exists, false otherwise
+    }
 }

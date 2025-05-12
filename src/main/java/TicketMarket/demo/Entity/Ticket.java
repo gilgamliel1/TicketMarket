@@ -26,7 +26,7 @@ public class Ticket {
     private String status ;
     @Column(name = "created_at")
     private LocalDateTime localDateTime ;
-    @Column(name = "serial_key")
+    @Column(name = "serial_key" , unique = true)
     private String serial_key ;
 
 
@@ -53,10 +53,10 @@ public class Ticket {
     }
 
     public int getTicket_id() {
-        return ticket_id;
+        return this.ticket_id;
     }
     public String getSerialKey() {
-        return serial_key;
+        return this.serial_key;
     }
     public void setSerialKey(String serialKey){
         this.serial_key = serialKey;
