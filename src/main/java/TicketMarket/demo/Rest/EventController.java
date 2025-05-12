@@ -328,7 +328,6 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
 
 @GetMapping("/myTickets")
 public String myTickets(HttpSession session, Model model) {
-    System.out.println("myTickets endpoint called"); // Debug log
     User user = (User) session.getAttribute("loggedInUser");
     if (user == null) {
         return "redirect:/signin"; // Redirect to sign-in page if the user is not logged in
