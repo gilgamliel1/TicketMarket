@@ -95,7 +95,42 @@
         .back-button a:hover {
             background-color: #5a6268;
         }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .toggle-section {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .toggle-section label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .toggle-section input {
+            margin-top: 5px;
+        }
     </style>
+    <script>
+        function toggleAdditionalOptions() {
+            const toggleSection = document.getElementById('toggle-section');
+            const checkbox = document.getElementById('create-tickets-toggle');
+            toggleSection.style.display = checkbox.checked ? 'block' : 'none';
+        }
+    </script>
 </head>
 <body>
 <div class="container">
@@ -126,6 +161,21 @@
             <option value="Concert">Concert</option>
             <option value="Other">Other</option>
         </select>
+
+        <!-- Toggle button -->
+        <div class="toggle-container">
+            <input type="checkbox" id="create-tickets-toggle" onclick="toggleAdditionalOptions()" />
+            <label for="create-tickets-toggle">Create tickets for this event</label>
+        </div>
+
+        <!-- Additional options for tickets -->
+        <div id="toggle-section" class="toggle-section">
+            <label for="ticket_count">Number of Tickets:</label>
+            <input type="number" id="ticket_count" name="ticket_count" placeholder="Enter number of tickets" min="1" />
+
+            <label for="ticket_price">Price per Ticket:</label>
+            <input type="number" id="ticket_price" name="ticket_price" placeholder="Enter ticket price" min="1" />
+        </div>
 
         <!-- Submit button -->
         <button type="submit">Create Event</button>
