@@ -10,7 +10,6 @@ import TicketMarket.demo.Entity.Transaction;
 import TicketMarket.demo.Entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -250,7 +249,12 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
             return "buyTicketPage";
         }
 
+        // Process the ticket purchase
         processBuyingTicket(buyer, seller, ticket, event);
+
+        // Update the seller_id to the buyer's ID
+        ticket.setSeller_id(buyer.getUser_id());
+        ticketRepository.save(ticket);
 
         model.addAttribute("ticket", ticket);
         model.addAttribute("event", event);
