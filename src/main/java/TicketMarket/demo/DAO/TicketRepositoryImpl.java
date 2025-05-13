@@ -24,7 +24,7 @@ public class TicketRepositoryImpl implements TicketCustomRepository{
     }
     @Override
     public List<Ticket> availableTicketsByEventId(int eventId) {
-        TypedQuery<Ticket> qur = entityManager.createQuery("FROM Ticket WHERE event_id = :eventId AND status = 1  ORDER BY price" , Ticket.class);
+        TypedQuery<Ticket> qur = entityManager.createQuery("FROM Ticket t WHERE t.event_id = :eventId AND (t.status = 1 OR t.status = 2)ORDER BY t.price"  , Ticket.class);
         qur.setParameter("eventId", eventId);
         return qur.getResultList();
     }
@@ -36,7 +36,7 @@ public class TicketRepositoryImpl implements TicketCustomRepository{
         );
         query.setParameter("serialKey", serialKey);
         Long count = query.getSingleResult();
-        return count == 0; // Returns true if the serial_key exists, false otherwise
+        return count > 0; // Returns true if the serial_key exists, false otherwise
     }
     
     @Override
@@ -44,6 +44,15 @@ public class TicketRepositoryImpl implements TicketCustomRepository{
         TypedQuery<Ticket> qur = entityManager.createQuery("FROM Ticket WHERE seller_id = :seller_id" , Ticket.class);
         qur.setParameter("seller_id", seller_id);
         return qur.getResultList();
+    }
+    @Override
+    public boolean generatedByUsTicket(String serialKey) {
+        TypedQuery<Long> query = entityManager.createQuery(
+            "SELECT COUNT(t) FROM Ticket t WHERE t.serial_key = :serialKey AND t.status = 1", Long.class
+        );
+        query.setParameter("serialKey", serialKey);
+        Long count = query.getSingleResult();
+        return count == 0; // Returns true if the serial_key exists, false otherwise
     }
 
 

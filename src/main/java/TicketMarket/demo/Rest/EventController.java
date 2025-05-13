@@ -135,20 +135,20 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
         model.addAttribute("event", event);
 
         // Fetch tickets and their sellers
-        // List<Ticket> ticketList = ticketRepository.availableTicketsByEventId(id);
-        // Map<Integer, String> sellerUsernames = new HashMap<>();
+        List<Ticket> ticketList = ticketRepository.availableTicketsByEventId(id);
+        Map<Integer, String> sellerUsernames = new HashMap<>();
 
-        // for (Ticket ticket : ticketList) {
-        //     User seller = userRepository.findById(ticket.getSeller_id())
-        //             .orElseThrow(() -> new RuntimeException("Seller not found for ticket ID " + ticket.getTicket_id()));
-        //     sellerUsernames.put(ticket.getTicket_id(), seller.getUser_name());
-        // }
+        for (Ticket ticket : ticketList) {
+            User seller = userRepository.findById(ticket.getSeller_id())
+                    .orElseThrow(() -> new RuntimeException("Seller not found for ticket ID " + ticket.getTicket_id()));
+            sellerUsernames.put(ticket.getTicket_id(), seller.getUser_name());
+        }
 
-        // model.addAttribute("ticketsList", ticketList);
-        // model.addAttribute("sellerUsernames", sellerUsernames);
-        // model.addAttribute("eventAvailableTicketsCount", eventRepository.amountOfAvilableTickets(id));
-        // model.addAttribute("eventSoldTicketsCount", eventRepository.amountOfSoldTickets(id));
-        // model.addAttribute("eventLookingForTicketsCount", eventRepository.amountOfLookingForTickets(id));
+        model.addAttribute("ticketsList", ticketList);
+        model.addAttribute("sellerUsernames", sellerUsernames);
+        model.addAttribute("eventAvailableTicketsCount", eventRepository.amountOfAvilableTickets(id));
+        model.addAttribute("eventSoldTicketsCount", eventRepository.amountOfSoldTickets(id));
+        model.addAttribute("eventLookingForTicketsCount", eventRepository.amountOfLookingForTickets(id));
 
         return "eventTicketsPage";
     }
@@ -187,16 +187,28 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
         String serialKey = http.getParameter("serialKey");
 
         // Validate serial key
-        if (!verifyTicket(serialKey)) {
-            model.addAttribute("error", "Serial key is not valid.");
-            return "newEventTicketForm";
+        Ticket temp = null ; 
+        if (generatedByUsTicket(serialKey)) {
+            if (!verifyTicket(serialKey)) {
+                model.addAttribute("error", "Serial key is not valid.");
+                return "newEventTicketForm";
+            }
+
+         temp = new Ticket(id , user.getUser_id(),  price , description , 1 , serialKey);
         }
-        Ticket temp = new Ticket(id , user.getUser_id(),  price , description , 2 , serialKey);
+        else {
+         temp = new Ticket(id , user.getUser_id(),  price , description , 2 , serialKey);
+
+        }
+
         // Save the new ticket
         ticketRepository.save(temp);
 
         // Redirect to success page
         return "ticketCreateSuccess";
+    }
+    public boolean generatedByUsTicket(String serialKey){
+        return ticketRepository.generatedByUsTicket(serialKey);
     }
     public boolean verifyTicket(String serialKey){
         return ticketRepository.verifyTicket(serialKey);
