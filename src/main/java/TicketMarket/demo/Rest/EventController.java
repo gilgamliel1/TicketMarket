@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -238,6 +239,65 @@ public String processNewEventTicket(@PathVariable int id, HttpServletRequest htt
 
     return "ticketCreateSuccess";
 }
+
+        @GetMapping("/{id}/generateTickets")
+        public String generateTicketsForm(@PathVariable int id, HttpSession session, Model model) {
+            User user = (User) session.getAttribute("loggedInUser");
+            if (user == null) {
+                return "redirect:/signin"; // Redirect to sign-in page if the user is not logged in
+            }
+
+            Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+            if (!event.getEvent_owner().equals(user.getUser_name())) {
+                model.addAttribute("error", "You are not authorized to generate tickets for this event.");
+                return "redirect:/event/" + id;
+            }
+
+            model.addAttribute("event", event);
+            return "generateTicketsForm"; // Reuse the create event form for ticket generation
+}
+
+        @PostMapping("/{id}/generateTickets")
+        public String processGenerateTickets(@PathVariable int id, HttpServletRequest http, HttpSession session, Model model) {
+            User user = (User) session.getAttribute("loggedInUser");
+            if (user == null) {
+                return "redirect:/signin"; // Redirect to sign-in page if the user is not logged in
+            }
+
+            Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+            if (!event.getEvent_owner().equals(user.getUser_name())) {
+                model.addAttribute("error", "You are not authorized to generate tickets for this event.");
+                return "redirect:/event/" + id;
+            }
+
+            // Retrieve ticket details
+            String ticketCountStr = http.getParameter("ticket_count");
+            String ticketPriceStr = http.getParameter("ticket_price");
+
+            try {
+                int ticketCount = Integer.parseInt(ticketCountStr);
+                int ticketPrice = Integer.parseInt(ticketPriceStr);
+
+                if (ticketCount <= 0 || ticketPrice <= 0) {
+                    model.addAttribute("error", "Ticket count and price must be positive integers.");
+                    return "generateTicketsForm";
+                }
+
+                // Generate tickets for the event
+                for (int i = 0; i < ticketCount; i++) {
+                    String serialKey = generateSerialKey();
+                    Ticket ticket = new Ticket(event.getEvent_id(), user.getUser_id(), ticketPrice,
+                            "Generated Ticket " + (i + 1), serialKey, true, true);
+                    ticketRepository.save(ticket);
+                    System.out.println("Generated ticket with Serial Key: " + serialKey);
+                }
+            } catch (NumberFormatException e) {
+                model.addAttribute("error", "Invalid ticket count or price. Please enter valid numbers.");
+                return "generateTicketsForm";
+            }
+
+            return "redirect:/event/" + id; // Redirect back to the event page
+        }
 
     public boolean generatedByUsTicket(String serialKey) {
         return ticketRepository.generatedByUsTicket(serialKey);

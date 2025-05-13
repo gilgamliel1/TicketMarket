@@ -1,0 +1,11 @@
+<form th:action="@{/event/{id}/generateTickets(id=${event.event_id})}" method="post">
+    <div class="form-group">
+        <label for="ticket_count">Number of Tickets</label>
+        <input type="number" id="ticket_count" name="ticket_count" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label for="ticket_price">Ticket Price</label>
+        <input type="number" id="ticket_price" name="ticket_price" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-success">Generate Tickets</button>
+</form>
