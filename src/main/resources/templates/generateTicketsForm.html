@@ -1,11 +1,109 @@
-<form th:action="@{/event/{id}/generateTickets(id=${event.event_id})}" method="post">
-    <div class="form-group">
-        <label for="ticket_count">Number of Tickets</label>
-        <input type="number" id="ticket_count" name="ticket_count" class="form-control" required>
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Tickets</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f3f4f6;
+            text-align: center;
+        }
+
+        .container {
+            margin: 50px auto;
+            max-width: 400px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .back-button {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .back-button a {
+            text-decoration: none;
+            color: white;
+            background-color: #6c757d;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button a:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Generate Tickets</h1>
+
+    <!-- Ticket generation form -->
+    <form th:action="@{/event/{id}/generateTickets(id=${event.event_id})}" method="post">
+        <label for="ticket_count">Number of Tickets:</label>
+        <input type="number" id="ticket_count" name="ticket_count" placeholder="Enter number of tickets" required>
+
+        <label for="ticket_price">Ticket Price:</label>
+        <input type="number" id="ticket_price" name="ticket_price" placeholder="Enter ticket price" required>
+
+        <button type="submit">Generate Tickets</button>
+    </form>
+
+    <!-- Back to Event button -->
+    <div class="back-button">
+        <a th:href="@{'/event/' + ${event.event_id}}">Back to Event</a>
     </div>
-    <div class="form-group">
-        <label for="ticket_price">Ticket Price</label>
-        <input type="number" id="ticket_price" name="ticket_price" class="form-control" required>
-    </div>
-    <button type="submit" class="btn btn-success">Generate Tickets</button>
-</form>
+</div>
+</body>
+</html>

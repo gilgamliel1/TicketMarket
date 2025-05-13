@@ -140,31 +140,33 @@ public class EventController {
     }
 
     @GetMapping("/{id}/Tickets")
-    public String eventTickets(@PathVariable int id, HttpSession session, Model model) {
-        if (session.getAttribute("loggedInUser") == null)
-            return "redirect:/signin";
+public String eventTickets(@PathVariable int id, HttpSession session, Model model) {
+    if (session.getAttribute("loggedInUser") == null)
+        return "redirect:/signin";
 
-        Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
-        model.addAttribute("event", event);
+    Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+    model.addAttribute("event", event);
 
-        // Fetch tickets and their sellers
-        List<Ticket> ticketList = ticketRepository.availableTicketsByEventId(id);
-        Map<Integer, String> sellerUsernames = new HashMap<>();
+    // Fetch tickets and their sellers
+    List<Ticket> ticketList = ticketRepository.availableTicketsByEventId(id);
+    Map<Integer, String> sellerUsernames = new HashMap<>();
 
-        for (Ticket ticket : ticketList) {
-            User seller = userRepository.findById(ticket.getSeller_id())
-                    .orElseThrow(() -> new RuntimeException("Seller not found for ticket ID " + ticket.getTicket_id()));
-            sellerUsernames.put(ticket.getTicket_id(), seller.getUser_name());
-        }
-
-        model.addAttribute("ticketsList", ticketList);
-        model.addAttribute("sellerUsernames", sellerUsernames);
-        model.addAttribute("eventAvailableTicketsCount", eventRepository.amountOfAvilableTickets(id));
-        model.addAttribute("eventSoldTicketsCount", eventRepository.amountOfSoldTickets(id));
-        model.addAttribute("eventLookingForTicketsCount", eventRepository.amountOfLookingForTickets(id));
-
-        return "eventTicketsPage";
+    for (Ticket ticket : ticketList) {
+        User seller = userRepository.findById(ticket.getSeller_id())
+                .orElseThrow(() -> new RuntimeException("Seller not found for ticket ID " + ticket.getTicket_id()));
+        sellerUsernames.put(ticket.getTicket_id(), seller.getUser_name());
     }
+
+    model.addAttribute("ticketsList", ticketList);
+    model.addAttribute("sellerUsernames", sellerUsernames);
+    model.addAttribute("eventAvailableTicketsCount", eventRepository.amountOfAvilableTickets(id));
+    model.addAttribute("eventSoldTicketsCount", eventRepository.amountOfSoldTickets(id));
+    model.addAttribute("eventLookingForTicketsCount", eventRepository.amountOfLookingForTickets(id));
+    model.addAttribute("loggedInUser", session.getAttribute("loggedInUser")); // ✅ Add this line
+
+    return "eventTicketsPage";
+}
+
 
     @GetMapping("/{id}/Tickets/newTicket")
     public String newEventTicket(@PathVariable int id, Model model) {

@@ -277,11 +277,15 @@
     </div>
 
     <!-- Action Buttons -->
-    <div style="text-align: center;">
-        <a th:href="@{'/event/' + ${event.event_id}}" class="create-ticket-button" style="background-color: #6c757d; margin-right: 10px;">Back to Event</a>
-        <a th:href="@{'/event/' + ${event.event_id} + '/Tickets/newTicket'}" class="create-ticket-button">Create New Ticket</a>
-        
+<div style="text-align: center;">
+    <a th:href="@{'/event/' + ${event.event_id}}" class="create-ticket-button" style="background-color: #6c757d; margin-right: 10px;">Back to Event</a>
+    <a th:href="@{'/event/' + ${event.event_id} + '/Tickets/newTicket'}" class="create-ticket-button">Create New Ticket</a>
+
+    <!-- Only show if logged-in user is the event owner -->
+    <div th:if="${loggedInUser != null and loggedInUser.user_name == event.event_owner}">
+        <a th:href="@{'/event/' + ${event.event_id} + '/generateTickets'}" class="create-ticket-button" style="background-color: #17a2b8; margin-left: 10px;">Generate New Tickets</a>
     </div>
+</div>
 </div>
 </body>
 </html>
