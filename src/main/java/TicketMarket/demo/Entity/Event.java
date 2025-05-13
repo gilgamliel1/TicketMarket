@@ -2,7 +2,6 @@ package TicketMarket.demo.Entity;
 
 import jakarta.persistence.*;
 
-import java.sql.Time;
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,28 +10,31 @@ public class Event {
     @Id
     @Column(name = "event_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int event_id ;
+    private int event_id;
 
     @Column(name = "event_name")
-    private String event_name ;
+    private String event_name;
 
     @Column(name = "event_date")
     private LocalDateTime event_date;
 
-    @Column(name="event_loc")
-    private String eventLoc ;
+    @Column(name = "event_loc")
+    private String eventLoc;
 
-    @Column(name="event_desc")
-    private String event_desc ;
+    @Column(name = "event_desc")
+    private String event_desc;
 
     @Column(name = "event_owner")
-    private String event_owner ;
+    private String event_owner;
 
     @Column(name = "event_created_at")
-    private LocalDateTime event_created_at ;
+    private LocalDateTime event_created_at;
 
     @Column(name = "tag")
-    private String tag ;
+    private String tag;
+
+    @Column(name = "generated_by_us")
+    private boolean generated_by_us; // New field added
 
     public Event() {
         this.event_id = 0;
@@ -43,16 +45,18 @@ public class Event {
         this.event_owner = "NoOne";
         this.event_created_at = LocalDateTime.now();
         this.tag = "Other";
+        this.generated_by_us = false; // Default value
     }
 
-    public Event(String event_name, LocalDateTime event_date, String eventLoc, String event_desc, String event_owner , String tag) {
+    public Event(String event_name, LocalDateTime event_date, String eventLoc, String event_desc, String event_owner, String tag, boolean generated_by_us) {
         this.event_name = event_name;
         this.event_date = event_date;
         this.eventLoc = eventLoc;
         this.event_desc = event_desc;
         this.event_owner = event_owner;
         this.event_created_at = LocalDateTime.now();
-        this.tag = tag ;
+        this.tag = tag;
+        this.generated_by_us = generated_by_us;
     }
 
     @Override
@@ -65,14 +69,14 @@ public class Event {
                 ", event_desc='" + event_desc + '\'' +
                 ", event_owner='" + event_owner + '\'' +
                 ", event_created_at=" + event_created_at +
+                ", tag='" + tag + '\'' +
+                ", generated_by_us=" + generated_by_us +
                 '}';
     }
 
     public int getEvent_id() {
         return event_id;
     }
-    public String getTag(){return this.tag;}
-    public void setTag(String tag){this.tag = tag;}
 
     public void setEvent_id(int event_id) {
         this.event_id = event_id;
@@ -124,5 +128,21 @@ public class Event {
 
     public void setEvent_created_at(LocalDateTime event_created_at) {
         this.event_created_at = event_created_at;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public boolean isGenerated_by_us() {
+        return generated_by_us;
+    }
+
+    public void setGenerated_by_us(boolean generated_by_us) {
+        this.generated_by_us = generated_by_us;
     }
 }

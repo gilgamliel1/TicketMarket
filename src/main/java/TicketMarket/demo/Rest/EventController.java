@@ -68,6 +68,11 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
     String eventLoc = http.getParameter("eventLoc");
     String event_desc = http.getParameter("event_desc");
     String tag = http.getParameter("tag");
+    String createTicketsToggle = http.getParameter("create-tickets-toggle");
+
+    // Set generated_by_us based on createTicketsToggle
+    boolean generatedByUs = "on".equals(createTicketsToggle);
+
     User temp = (User) session.getAttribute("loggedInUser");
 
     // Check if the event already exists
@@ -77,13 +82,12 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
     }
 
     // Create the event
-    Event newEvent = new Event(name, event_time, eventLoc, event_desc, temp.getUser_name(), tag);
+    Event newEvent = new Event(name, event_time, eventLoc, event_desc, temp.getUser_name(), tag, generatedByUs);
     eventRepository.save(newEvent); // Ensure the event is saved before creating tickets
     System.out.println("Event created with ID: " + newEvent.getEvent_id());
 
     // Check if the "create tickets" checkbox is checked
-    String createTicketsToggle = http.getParameter("create-tickets-toggle");
-    if ("on".equals(createTicketsToggle)) {
+    if (generatedByUs) {
         // Retrieve ticket details
         String ticketCountStr = http.getParameter("ticket_count");
         String ticketPriceStr = http.getParameter("ticket_price");
@@ -100,7 +104,7 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
             // Create tickets for the event
             for (int i = 0; i < ticketCount; i++) {
                 String serialKey = generateSerialKey();
-                Ticket ticket = new Ticket(newEvent.getEvent_id(), temp.getUser_id(), ticketPrice, "Ticket " + (i + 1), 1, serialKey);
+                Ticket ticket = new Ticket(newEvent.getEvent_id(), temp.getUser_id(), ticketPrice, "Ticket " + (i + 1), serialKey, true, true);
                 ticketRepository.save(ticket);
                 System.out.println("Ticket created with Serial Key: " + serialKey);
             }
@@ -158,56 +162,50 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
         model.addAttribute("event" , event);
         return "newEventTicketForm";
     }
-    @RequestMapping(value = "/{id}/Tickets/processNewTicket", method = RequestMethod.POST)
-    public String processNewEventTicket(@PathVariable int id, HttpServletRequest http, HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loggedInUser");
-        if (user == null) {
-            model.addAttribute("error", "No User Found!");
-            return "redirect:/signin";
-        }
-        Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
-        model.addAttribute("event", event);
+@RequestMapping(value = "/{id}/Tickets/processNewTicket", method = RequestMethod.POST)
+public String processNewEventTicket(@PathVariable int id, HttpServletRequest http, HttpSession session, Model model) {
+    User user = (User) session.getAttribute("loggedInUser");
+    if (user == null) {
+        model.addAttribute("error", "No User Found!");
+        return "redirect:/signin";
+    }
+    Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+    model.addAttribute("event", event);
 
-        // Get and validate the price
-        String priceStr = http.getParameter("price");
-        int price;
-        try {
-            price = Integer.parseInt(priceStr);
-            if (price <= 0) {
-                model.addAttribute("error", "Price must be a positive integer.");
-                return "newEventTicketForm";
-            }
-        } catch (NumberFormatException e) {
-            model.addAttribute("error", "Invalid price value. Please enter a valid number.");
+    // Get and validate the price
+    String priceStr = http.getParameter("price");
+    int price;
+    try {
+        price = Integer.parseInt(priceStr);
+        if (price <= 0) {
+            model.addAttribute("error", "Price must be a positive integer.");
             return "newEventTicketForm";
         }
-
-        // Get other parameters
-        String description = http.getParameter("description");
-        String serialKey = http.getParameter("serialKey");
-
-        // Validate serial key
-        Ticket temp = null ; 
-        if (generatedByUsTicket(serialKey)) {
-            if (!verifyTicket(serialKey)) {
-                model.addAttribute("error", "Serial key is not valid.");
-                return "newEventTicketForm";
-            }
-
-         temp = new Ticket(id , user.getUser_id(),  price , description , 1 , serialKey);
-        }
-        else {
-         temp = new Ticket(id , user.getUser_id(),  price , description , 2 , serialKey);
-
-        }
-
-        // Save the new ticket
-        ticketRepository.save(temp);
-
-        // Redirect to success page
-        return "ticketCreateSuccess";
+    } catch (NumberFormatException e) {
+        model.addAttribute("error", "Invalid price value. Please enter a valid number.");
+        return "newEventTicketForm";
     }
-    public boolean generatedByUsTicket(String serialKey){
+
+    // Get other parameters
+    String description = http.getParameter("description");
+    String serialKey = http.getParameter("serialKey");
+    boolean forSale = "on".equals(http.getParameter("for_sale")); // Retrieve the checkbox value for 'for_sale'
+
+    // Validate serial key and determine if the ticket is generated by the system
+    boolean generatedByUs = generatedByUsTicket(serialKey);
+
+    // Create the ticket
+
+    Ticket temp = new Ticket(id, user.getUser_id(), price, description, serialKey, true, generatedByUs);
+
+    // Save the new ticket
+    ticketRepository.save(temp);
+
+    // Redirect to success page
+    return "ticketCreateSuccess";
+}
+
+public boolean generatedByUsTicket(String serialKey){
         return ticketRepository.generatedByUsTicket(serialKey);
     }
     public boolean verifyTicket(String serialKey){
@@ -277,7 +275,6 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
         Transaction transaction = new Transaction(ticket.getTicket_id() , buyer.getUser_id() , seller.getUser_id(),  LocalDateTime.now() , ticket.getPrice());
         buyer.setBalance(buyer.getBalance() - ticket.getPrice());
         seller.setBalance(seller.getBalance() + ticket.getPrice());
-        ticket.setStatus(2);
         transactionRepository.save(transaction);
         ticketRepository.save(ticket);
         userRepository.save(buyer);

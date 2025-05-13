@@ -33,6 +33,7 @@ CREATE TABLE events (
     event_desc VARCHAR(255) DEFAULT NULL,
     event_owner VARCHAR(255) NOT NULL,
     event_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    generated_by_us BOOLEAN DEFAULT FALSE, -- added
     tag VARCHAR(255) NOT NULL
 ) ENGINE=InnoDB;
 
@@ -43,7 +44,9 @@ CREATE TABLE tickets (
     seller_id INT NOT NULL,
     price INT NOT NULL,
     description VARCHAR(50),
-    status INT DEFAULT 1, -- 1: ticket that can be resold, 2: ticket for sale one time, 3: not for sale
+    for_sale BOOLEAN DEFAULT FALSE, -- added
+    sold BOOLEAN DEFAULT FALSE, -- added
+    generated_by_us BOOLEAN DEFAULT FALSE, -- added
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     serial_key VARCHAR(50) NOT NULL,
     FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -75,15 +78,10 @@ INSERT INTO users (
 
 -- Insert example events
 INSERT INTO events (
-    event_name, event_date, event_loc, event_desc, event_owner, tag
+    event_name, event_date, event_loc, event_desc, event_owner, generated_by_us, tag
 ) VALUES
-('House Party', '2025-05-02 22:00:00', 'Beer Sheva', 'Party at my house', 'gil', 'Parties'),
-('Live Coding Session', '2025-05-10 18:00:00', 'Ben-Gurion University, Building 28', 'An evening of real-time coding and pizza!', 'shahar', 'Other'),
-('Startup Meetup', '2025-05-18 19:00:00', 'Tel Aviv Hub', 'Networking for tech entrepreneurs', 'idan', 'Business'),
-('Beach Festival', '2025-06-01 16:00:00', 'Tel Aviv Beach', 'Music, food, and fun all evening!', 'dror', 'Concert');
+('House Party', '2025-05-02 22:00:00', 'Beer Sheva', 'Party at my house', 'gil', FALSE, 'Parties'),
+('Live Coding Session', '2025-05-10 18:00:00', 'Ben-Gurion University, Building 28', 'An evening of real-time coding and pizza!', 'shahar', FALSE, 'Other'),
+('Startup Meetup', '2025-05-18 19:00:00', 'Tel Aviv Hub', 'Networking for tech entrepreneurs', 'idan', FALSE, 'Business'),
+('Beach Festival', '2025-06-01 16:00:00', 'Tel Aviv Beach', 'Music, food, and fun all evening!', 'dror', FALSE, 'Concert');
 
--- Grant all privileges to the TicketMarket user for the TicketMarket database
-GRANT ALL PRIVILEGES ON TicketMarket.* TO 'TicketMarket'@'localhost' IDENTIFIED BY 'TicketMarket';
-
--- Apply the changes
-FLUSH PRIVILEGES;

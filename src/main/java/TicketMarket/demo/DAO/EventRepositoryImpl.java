@@ -34,13 +34,13 @@ public class EventRepositoryImpl implements EventCustomRepository{
     }
     @Override
     public int amountOfAvilableTickets(int eventId){
-        TypedQuery<Long> query = entityManager.createQuery("SELECT COUNT(t) FROM Ticket t WHERE t.status = 1 AND t.event_id = :eventId", Long.class);
+        TypedQuery<Long> query = entityManager.createQuery("SELECT COUNT(t) FROM Ticket t WHERE t.for_sale = TRUE AND t.event_id = :eventId", Long.class);
         query.setParameter("eventId", eventId);
         return query.getSingleResult().intValue();
     }
     @Override
     public int amountOfSoldTickets(int eventId){
-        TypedQuery<Long> query = entityManager.createQuery("SELECT COUNT(t) FROM Ticket t WHERE t.status = 2 AND t.event_id = :eventId", Long.class);
+        TypedQuery<Long> query = entityManager.createQuery("SELECT COUNT(t) FROM Ticket t WHERE t.sold = TRUE AND t.for_sale = FALSE AND t.event_id = :eventId", Long.class);
         query.setParameter("eventId", eventId);
         return query.getSingleResult().intValue();
     }
