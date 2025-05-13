@@ -48,7 +48,7 @@ public boolean verifyTicket(int eventId, String serialKey) {
         qur.setParameter("seller_id", seller_id);
         return qur.getResultList();
     }
-@Override
+    @Override
 public List<Ticket> findBySellerIdAndEventId(int seller_id, int event_id) {
     TypedQuery<Ticket> query = entityManager.createQuery(
         "FROM Ticket WHERE seller_id = :seller_id AND event_id = :event_id", Ticket.class
