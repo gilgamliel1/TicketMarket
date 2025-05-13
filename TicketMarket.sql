@@ -1,6 +1,6 @@
 -- Drop and recreate the TicketMarket database
 DROP DATABASE IF EXISTS TicketMarket;
-CREATE DATABASE TicketMarket;
+CREATE DATABASE TicketMarket CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE TicketMarket;
 
 -- Drop existing tables if they exist to avoid conflicts
@@ -12,17 +12,17 @@ DROP TABLE IF EXISTS users;
 -- Create 'users' table
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_name VARCHAR(50) UNIQUE,
-    user_first_name VARCHAR(50),
-    user_last_name VARCHAR(50),
-    user_id_number VARCHAR(9) UNIQUE,
-    email VARCHAR(100) UNIQUE,
-    password_hash VARCHAR(255),
+    user_name VARCHAR(50) UNIQUE NOT NULL,
+    user_first_name VARCHAR(50) NOT NULL,
+    user_last_name VARCHAR(50) NOT NULL,
+    user_id_number VARCHAR(9) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
     profile_picture_url VARCHAR(255),
     bio VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     wallet_balance INT DEFAULT 0
-);
+) ENGINE=InnoDB;
 
 -- Create 'events' table
 CREATE TABLE events (
@@ -34,7 +34,7 @@ CREATE TABLE events (
     event_owner VARCHAR(255) NOT NULL,
     event_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     tag VARCHAR(255) NOT NULL
-);
+) ENGINE=InnoDB;
 
 -- Create 'tickets' table
 CREATE TABLE tickets (
@@ -43,12 +43,12 @@ CREATE TABLE tickets (
     seller_id INT NOT NULL,
     price INT NOT NULL,
     description VARCHAR(50),
-    status INT DEFAULT 1, -- 1: ticket that can be reselled, 2: ticket for sale 1 time, 3: no for sell ticket
+    status INT DEFAULT 1, -- 1: ticket that can be resold, 2: ticket for sale one time, 3: not for sale
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     serial_key VARCHAR(50) NOT NULL,
-    FOREIGN KEY (event_id) REFERENCES events(event_id),
-    FOREIGN KEY (seller_id) REFERENCES users(user_id)
-);
+    FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (seller_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
 
 -- Create 'transactions' table
 CREATE TABLE transactions (
@@ -58,10 +58,10 @@ CREATE TABLE transactions (
     seller_id INT NOT NULL,
     transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     price INT NOT NULL,
-    FOREIGN KEY (ticket_id) REFERENCES tickets(ticket_id),
-    FOREIGN KEY (buyer_id) REFERENCES users(user_id),
-    FOREIGN KEY (seller_id) REFERENCES users(user_id)
-);
+    FOREIGN KEY (ticket_id) REFERENCES tickets(ticket_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (buyer_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (seller_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
 
 -- Insert example users (with unique IDs and emails)
 INSERT INTO users (
@@ -73,7 +73,7 @@ INSERT INTO users (
 ('idan', 'Idan', 'Azama', '111222333', 'idan@example.com', '1234', 'https://example.com/profile3.jpg', 'Backend developer', 50),
 ('dror', 'Dror', 'Alon', '444555666', 'dror@example.com', '1234', 'https://example.com/profile4.jpg', 'DJ and event host', 75);
 
--- Insert 4 example events
+-- Insert example events
 INSERT INTO events (
     event_name, event_date, event_loc, event_desc, event_owner, tag
 ) VALUES
@@ -81,3 +81,9 @@ INSERT INTO events (
 ('Live Coding Session', '2025-05-10 18:00:00', 'Ben-Gurion University, Building 28', 'An evening of real-time coding and pizza!', 'shahar', 'Other'),
 ('Startup Meetup', '2025-05-18 19:00:00', 'Tel Aviv Hub', 'Networking for tech entrepreneurs', 'idan', 'Business'),
 ('Beach Festival', '2025-06-01 16:00:00', 'Tel Aviv Beach', 'Music, food, and fun all evening!', 'dror', 'Concert');
+
+-- Grant all privileges to the TicketMarket user for the TicketMarket database
+GRANT ALL PRIVILEGES ON TicketMarket.* TO 'TicketMarket'@'localhost' IDENTIFIED BY 'TicketMarket';
+
+-- Apply the changes
+FLUSH PRIVILEGES;
