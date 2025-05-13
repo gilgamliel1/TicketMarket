@@ -29,15 +29,16 @@ public class TicketRepositoryImpl implements TicketCustomRepository{
         return qur.getResultList();
     }
  // ==============
-    @Override
-    public boolean verifyTicket(String serialKey) {
-        TypedQuery<Long> query = entityManager.createQuery(
-            "SELECT COUNT(t) FROM Ticket t WHERE t.serial_key = :serialKey", Long.class
-        );
-        query.setParameter("serialKey", serialKey);
-        Long count = query.getSingleResult();
-        return count > 0; // Returns true if the serial_key exists, false otherwise
-    }
+@Override
+public boolean verifyTicket(int eventId, String serialKey) {
+    TypedQuery<Long> query = entityManager.createQuery(
+        "SELECT COUNT(t) FROM Ticket t WHERE t.serial_key = :serialKey AND t.event_id = :eventId", Long.class
+    );
+    query.setParameter("serialKey", serialKey);
+    query.setParameter("eventId", eventId);
+    Long count = query.getSingleResult();
+    return count > 0; // Returns true if the serial_key exists and matches the eventId, false otherwise
+}
      // ==============
 
     

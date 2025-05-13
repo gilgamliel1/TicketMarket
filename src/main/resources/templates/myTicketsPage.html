@@ -77,8 +77,7 @@
 
         <!-- Show tickets if available -->
         <div th:each="ticket : ${myTickets}" class="ticket-card">
-            <h3 th:text="|Ticket for Event ID: ${ticket.event_id}|">Event ID</h3>
-            <p><strong>Price:</strong> <span th:text="${ticket.price}">Price</span></p>
+<h3 th:text="|Ticket for Event: ${ticketEventDetails[ticket.ticket_id]}|">Event Details</h3>            <p><strong>Price:</strong> <span th:text="${ticket.price}">Price</span></p>
             <p><strong>Description:</strong> <span th:text="${ticket.desc}">Description</span></p>
             <p><strong>Serial Key:</strong> <span th:text="${ticket.serialKey}">Serial Key</span></p>
         </div>
