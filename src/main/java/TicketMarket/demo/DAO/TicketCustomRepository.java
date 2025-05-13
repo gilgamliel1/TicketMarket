@@ -10,7 +10,7 @@ public interface TicketCustomRepository {
     List<Ticket> availableTicketsByEventId(int eventId);
     boolean verifyTicket(int eventId , String serialKey); // Add this method
     boolean generatedByUsTicket(String serialKey); 
-
+    Ticket findBySerialKey(String serialKey, int event_id); // Automatically implemented by Spring Data JPA
     List<Ticket> findBySellerId(int sellerId); // Automatically implemented by Spring Data JPA
 
 

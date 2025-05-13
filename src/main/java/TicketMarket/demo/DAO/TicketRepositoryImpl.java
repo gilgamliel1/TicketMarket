@@ -57,6 +57,17 @@ public boolean verifyTicket(int eventId, String serialKey) {
         Long count = query.getSingleResult();
         return count == 0; // Returns true if the serial_key exists, false otherwise
     }
+    
+    @Override
+    public Ticket findBySerialKey(String serialKey , int event_id) {
+    TypedQuery<Ticket> query = entityManager.createQuery(
+        "SELECT t FROM Ticket t WHERE t.serial_key = :serialKey AND t.event_id = :event_id", Ticket.class
+    );
+    query.setParameter("serialKey", serialKey);
+    query.setParameter("event_id", event_id);
+
+    return query.getSingleResult(); // Returns the ticket with the matching serialKey
+}
 
 
 }
