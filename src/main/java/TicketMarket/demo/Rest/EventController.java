@@ -179,9 +179,9 @@ public String processNewEventTicket(@PathVariable int id, HttpServletRequest htt
         model.addAttribute("error", "No User Found!");
         return "redirect:/signin";
     }
+    Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
 
     // Fetch the event
-    Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
     model.addAttribute("event", event);
 
     // Get and validate the price
@@ -222,6 +222,12 @@ public String processNewEventTicket(@PathVariable int id, HttpServletRequest htt
         }
     } 
     else {
+        int count = ticketRepository.findBySellerIdAndEventId(user.getUser_id() , event.getEvent_id()).size();
+        if (count > 0 ) {
+            model.addAttribute("error", "You cannot create more than 1 tickets.");
+            return "newEventTicketForm";
+        }
+        
         if (verifyTicket(event.getEvent_id(), serialKey)) {
             model.addAttribute("error", "Serial key already exists for this event.");
             return "newEventTicketForm";
