@@ -37,6 +37,10 @@ public class Ticket {
     private boolean sold; // New field added
 
 
+    @Column(name = "pdf_url")
+    private String pdfUrl;
+
+
     @Column(name = "generated_by_us")
     private boolean generated_by_us; // New field added
 
@@ -46,6 +50,7 @@ public class Ticket {
         this.seller_id = -1;
         this.price = -1;
         this.desc = "None";
+        this.pdfUrl = "None";
         this.localDateTime = LocalDateTime.now();
         this.serial_key = "None";
         this.for_sale = false; // Default value
@@ -53,8 +58,9 @@ public class Ticket {
         this.generated_by_us = false; // Default value
     }
 
-    public Ticket(int event_id, int seller_id, int price, String desc, String serial_key, boolean for_sale, boolean generated_by_us) {
+    public Ticket(int event_id, int seller_id ,  int price, String desc, String serial_key, boolean for_sale, boolean generated_by_us ,String pdString) {
         this.ticket_id = 50;
+        this.pdfUrl = pdString;
         this.event_id = event_id;
         this.seller_id = seller_id;
         this.price = price;
@@ -65,6 +71,14 @@ public class Ticket {
         this.for_sale = for_sale;
         this.generated_by_us = generated_by_us;
     }
+
+    public String getPdfUrl() {
+    return pdfUrl;
+}
+
+public void setPdfUrl(String pdfUrl) {
+    this.pdfUrl = pdfUrl;
+}
 
     public int getTicket_id() {
         return this.ticket_id;

@@ -44,11 +44,12 @@ CREATE TABLE tickets (
     seller_id INT NOT NULL,
     price INT NOT NULL,
     description VARCHAR(50),
-    for_sale BOOLEAN DEFAULT FALSE, -- added
-    sold BOOLEAN DEFAULT FALSE, -- added
-    generated_by_us BOOLEAN DEFAULT FALSE, -- added
+    for_sale BOOLEAN DEFAULT FALSE,
+    sold BOOLEAN DEFAULT FALSE,
+    generated_by_us BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     serial_key VARCHAR(50) NOT NULL,
+    pdf_url VARCHAR(255), -- new column
     FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (seller_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
