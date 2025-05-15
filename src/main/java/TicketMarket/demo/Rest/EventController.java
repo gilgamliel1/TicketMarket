@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.IOException;
 import java.util.UUID;
-
+import TicketMarket.demo.Util.QRUtils;
 import TicketMarket.demo.DAO.EventRepository;
 import TicketMarket.demo.DAO.TicketRepository;
 import TicketMarket.demo.DAO.TransactionRepository;
@@ -253,8 +253,30 @@ public String processNewEventTicket(@PathVariable int id,
     }
 
     String description = http.getParameter("description");
-    String serialKey = http.getParameter("serialKey");
+    String serialKey = null;
 
+    // Extract serial key from the uploaded PDF
+    if (!file.isEmpty() && file.getContentType().equals("application/pdf")) {
+        try {
+            Path tempFile = Files.createTempFile("ticket_pdf_", ".pdf");
+            file.transferTo(tempFile.toFile());
+            serialKey = QRUtils.extractQRCodeFromPDF(tempFile);
+            Files.delete(tempFile); // Clean up the temporary file
+
+            if (serialKey == null) {
+                model.addAttribute("error", "No QR code found in the uploaded PDF.");
+                return "newEventTicketForm";
+            }
+        } catch (IOException e) {
+            model.addAttribute("error", "Failed to process the uploaded PDF file.");
+            return "newEventTicketForm";
+        }
+    } else {
+        model.addAttribute("error", "You must upload a valid PDF file containing a QR code.");
+        return "newEventTicketForm";
+    }
+
+    // Validate the serial key for system-generated events
     if (event.isGenerated_by_us()) {
         boolean isSerialKeyValid = ticketRepository.verifyTicket(event.getEvent_id(), serialKey);
         if (!isSerialKeyValid) {
@@ -273,38 +295,8 @@ public String processNewEventTicket(@PathVariable int id,
         temp.setDesc(description);
         ticketRepository.save(temp);
     } else {
-        // PDF is required
-        if (file.isEmpty() || !file.getContentType().equals("application/pdf")) {
-            model.addAttribute("error", "You must upload a valid PDF file.");
-            return "newEventTicketForm";
-        }
-
-        int count = ticketRepository.findBySellerIdAndEventId(user.getUser_id(), event.getEvent_id()).size();
-        if (count > 0) {
-            model.addAttribute("error", "You cannot create more than 1 ticket.");
-            return "newEventTicketForm";
-        }
-
-        if (verifyTicket(event.getEvent_id(), serialKey)) {
-            model.addAttribute("error", "Serial key already exists for this event.");
-            return "newEventTicketForm";
-        }
-
-        // Save the uploaded file
-        String pdfPath;
-        try {
-            String uploadDir = "uploads/tickets/";
-            Files.createDirectories(Paths.get(uploadDir));
-            String fileName = "ticket_" + user.getUser_id() + "_" + UUID.randomUUID() + ".pdf";
-            Path filePath = Paths.get(uploadDir + fileName);
-            Files.write(filePath, file.getBytes());
-            pdfPath = filePath.toString();
-        } catch (IOException e) {
-            model.addAttribute("error", "Failed to save the PDF file.");
-            return "newEventTicketForm";
-        }
-
-        Ticket temp = new Ticket(id, user.getUser_id(), price, description, serialKey, true, false, pdfPath);
+        // Create a new ticket for non-system-generated events
+        Ticket temp = new Ticket(id, user.getUser_id(), price, description, serialKey, true, false, null);
         ticketRepository.save(temp);
     }
 
