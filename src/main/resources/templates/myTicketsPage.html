@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Tickets</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -43,7 +44,7 @@
 
         .ticket-card p {
             margin: 5px 0;
-            color: #666;
+            color: #333;
         }
 
         .qr-section {
@@ -99,19 +100,24 @@
     <div th:each="ticket : ${myTickets}" class="ticket-card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <h3 th:text="|Ticket for Event: ${ticketEventDetails[ticket.ticket_id]}|">Event Details</h3>
+                <h3 th:text="|Ticket for: ${ticketEventDetails[ticket.ticket_id]}|">Event Details</h3>
                 <p><strong>Description:</strong> <span th:text="${ticket.desc}">Description</span></p>
                 <p><strong>Serial Key:</strong>
-                    <span th:text="${ticket.serialKey}" th:attr="data-ticket-id=${ticket.ticket_id}" class="serial-key">
-                        Serial Key
-                    </span>
+                    <span th:text="${ticket.serialKey}"
+                          th:attr="data-ticket-id=${ticket.ticket_id}"
+                          class="serial-key">Serial Key</span>
                 </p>
             </div>
             <div class="qr-section">
                 <canvas th:id="'qr-' + ${ticket.ticket_id}" width="150" height="150"
                         style="border: 1px solid #ddd; border-radius: 4px;"></canvas>
                 <button type="button"
-                        th:attr="onclick='downloadTicket(${ticket.ticket_id}, \'[[${ticket.serialKey}]]\', \'[[${ticket.desc}]]\', \'[[${ticketEventDetails[ticket.ticket_id]}]]\')'">
+                        class="download-btn"
+                        th:attr="data-ticket-id=${ticket.ticket_id},
+                                 data-serial-key='${ticket.serialKey}',
+                                 data-description='${ticket.desc}',
+                                 data-event-details='${ticketEventDetails[ticket.ticket_id]}',
+                                 data-user-name='${loggedInUser.user_name}'">
                     Download Ticket
                 </button>
             </div>
@@ -134,52 +140,39 @@
                 });
             }
         });
-    });
 
-    function downloadTicket(ticketId, serialKey, description, eventDetails) {
-        const qr = new QRious({
-            value: serialKey,
-            size: 150
+        const downloadButtons = document.querySelectorAll(".download-btn");
+        downloadButtons.forEach(btn => {
+            btn.addEventListener("click", async () => {
+                const ticketId = btn.getAttribute("data-ticket-id");
+                const serialKey = btn.getAttribute("data-serial-key");
+                const description = btn.getAttribute("data-description");
+                const eventDetails = btn.getAttribute("data-event-details");
+                const userName = btn.getAttribute("data-user-name");
+
+                const canvas = document.getElementById("qr-" + ticketId);
+                const qrDataUrl = canvas.toDataURL();
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(20);
+                doc.setTextColor(33, 150, 243);
+                doc.text(`Ticket for: ${eventDetails}`, 20, 30);
+
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.setFont("helvetica", "normal");
+                doc.text(`User: ${userName}`, 20, 45);
+                doc.text(`Description: ${description}`, 20, 55);
+                doc.text(`Serial Key: ${serialKey}`, 20, 65);
+
+                doc.addImage(qrDataUrl, "PNG", 20, 80, 60, 60);
+                doc.save(`ticket_${ticketId}.pdf`);
+            });
         });
-
-        const html = `
-            <html>
-            <head>
-                <title>Ticket ${ticketId}</title>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        padding: 30px;
-                        text-align: center;
-                    }
-                    .ticket {
-                        border: 1px solid #ccc;
-                        padding: 20px;
-                        border-radius: 10px;
-                        display: inline-block;
-                        text-align: left;
-                    }
-                    h2 { color: #007bff; }
-                    img { margin-top: 20px; }
-                </style>
-            </head>
-            <body>
-                <div class="ticket">
-                    <h2>Ticket for: ${eventDetails}</h2>
-                    <p><strong>Description:</strong> ${description}</p>
-                    <p><strong>Serial Key:</strong> ${serialKey}</p>
-                    <img src="${qr.toDataURL()}" alt="QR Code">
-                </div>
-            </body>
-            </html>
-        `;
-
-        const blob = new Blob([html], { type: "text/html" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `ticket_${ticketId}.html`;
-        link.click();
-    }
+    });
 </script>
 
 </body>
