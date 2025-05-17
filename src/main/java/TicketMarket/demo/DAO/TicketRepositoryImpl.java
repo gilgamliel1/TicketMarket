@@ -66,7 +66,19 @@ public List<Ticket> findBySellerIdAndEventId(int seller_id, int event_id) {
         Long count = query.getSingleResult();
         return count == 0; // Returns true if the serial_key exists, false otherwise
     }
+
     
+    @Override
+    public boolean isTicketAlredayForSale(String serialKey, int eventId) {
+    TypedQuery<Long> query = entityManager.createQuery(
+        "SELECT COUNT(t) FROM Ticket t WHERE t.serial_key = :serialKey AND t.event_id = :eventId AND t.for_sale = true ", Long.class
+    );
+    query.setParameter("serialKey", serialKey);
+    query.setParameter("eventId", eventId);
+    Long count = query.getSingleResult();
+    return count > 0;
+}
+
     @Override
     public Ticket findBySerialKey(String serialKey , int event_id) {
     TypedQuery<Ticket> query = entityManager.createQuery(

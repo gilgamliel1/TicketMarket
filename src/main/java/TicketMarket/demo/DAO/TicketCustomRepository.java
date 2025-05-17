@@ -12,8 +12,8 @@ public interface TicketCustomRepository {
     boolean generatedByUsTicket(String serialKey); 
     Ticket findBySerialKey(String serialKey, int event_id); // Automatically implemented by Spring Data JPA
     List<Ticket> findBySellerId(int sellerId); // Automatically implemented by Spring Data JPA
-     List<Ticket> findBySellerIdAndEventId(int seller_id , int event_id);
-
+    List<Ticket> findBySellerIdAndEventId(int seller_id , int event_id);
+    boolean isTicketAlredayForSale(String serialKey,int eventId ); // Add this method
 
 
 }
