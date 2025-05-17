@@ -1,4 +1,10 @@
-import com.google.zxing.*;
+package TicketMarket.demo.Util;
+
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.LuminanceSource;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.Result;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -11,22 +17,34 @@ import java.nio.file.Path;
 
 public class QRUtils {
 
+    /** 
+     * Scans every page of the PDF for a QR code.
+     * @return the first QR payload found, or null if none.
+     */
     public static String extractQRCodeFromPDF(Path pdfPath) {
         try (PDDocument document = PDDocument.load(pdfPath.toFile())) {
-            PDFRenderer pdfRenderer = new PDFRenderer(document);
-            for (int page = 0; page < document.getNumberOfPages(); page++) {
-                BufferedImage image = pdfRenderer.renderImageWithDPI(page, 300); // Render at 300 DPI for better accuracy
-                String qrCode = decodeQRCode(image);
-                if (qrCode != null) {
-                    return qrCode; // Return the first QR code found
+            PDFRenderer renderer = new PDFRenderer(document);
+            int pageCount = document.getNumberOfPages();
+
+            for (int page = 0; page < pageCount; page++) {
+                // render at 300 DPI for good QR fidelity
+                BufferedImage image = renderer.renderImageWithDPI(page, 300);
+                String qrText = decodeQRCode(image);
+                if (qrText != null) {
+                    return qrText;
                 }
             }
         } catch (IOException e) {
+            // I/O error reading PDF
             e.printStackTrace();
         }
-        return null; // Return null if no QR code is found
+        // no QR found
+        return null;
     }
 
+    /** 
+     * Uses ZXing to decode a single BufferedImage.
+     */
     private static String decodeQRCode(BufferedImage image) {
         try {
             LuminanceSource source = new BufferedImageLuminanceSource(image);
@@ -34,7 +52,7 @@ public class QRUtils {
             Result result = new MultiFormatReader().decode(bitmap);
             return result.getText();
         } catch (NotFoundException e) {
-            // No QR code found in the image
+            // no QR code in this image
             return null;
         }
     }

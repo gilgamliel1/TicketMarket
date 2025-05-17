@@ -88,10 +88,10 @@
             <label for="description">Description</label>
             <textarea id="description" name="description" placeholder="Enter Ticket Description"></textarea>
         </div>
-        <div class="form-group">
+        <!-- <div class="form-group">
             <label for="serialKey">Serial Key</label>
             <input type="text" id="serialKey" name="serialKey" placeholder="Enter Ticket Serial Key" required>
-        </div>
+        </div> -->
         <div class="form-group">
             <label for="file"
                    th:text="${event.generated_by_us} ? 'Upload PDF Ticket (optional)' : 'Upload PDF Ticket (required)'"></label>

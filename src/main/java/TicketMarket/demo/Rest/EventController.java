@@ -228,17 +228,19 @@ public String processNewEventTicket(@PathVariable int id,
                                     HttpServletRequest http,
                                     HttpSession session,
                                     Model model) {
+    // 1) Authenticate
     User user = (User) session.getAttribute("loggedInUser");
     if (user == null) {
         model.addAttribute("error", "No User Found!");
         return "redirect:/signin";
     }
 
+    // 2) Load event
     Event event = eventRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Event not found"));
     model.addAttribute("event", event);
 
-    // Get and validate the price
+    // 3) Parse & validate price
     String priceStr = http.getParameter("price");
     int price;
     try {
@@ -252,56 +254,68 @@ public String processNewEventTicket(@PathVariable int id,
         return "newEventTicketForm";
     }
 
+    // 4) Read description
     String description = http.getParameter("description");
+
+    // 5) Extract serialKey from PDF QR Code
     String serialKey = null;
-
-    // Extract serial key from the uploaded PDF
-    if (!file.isEmpty() && file.getContentType().equals("application/pdf")) {
-        try {
-            Path tempFile = Files.createTempFile("ticket_pdf_", ".pdf");
-            file.transferTo(tempFile.toFile());
-            serialKey = QRUtils.extractQRCodeFromPDF(tempFile);
-            Files.delete(tempFile); // Clean up the temporary file
-
-            if (serialKey == null) {
-                model.addAttribute("error", "No QR code found in the uploaded PDF.");
-                return "newEventTicketForm";
-            }
-        } catch (IOException e) {
-            model.addAttribute("error", "Failed to process the uploaded PDF file.");
-            return "newEventTicketForm";
-        }
-    } else {
+    if (file.isEmpty() || !file.getContentType().equals("application/pdf")) {
         model.addAttribute("error", "You must upload a valid PDF file containing a QR code.");
         return "newEventTicketForm";
     }
+    try {
+        // write to temp file
+        Path tempFile = Files.createTempFile("ticket_pdf_", ".pdf");
+        file.transferTo(tempFile.toFile());
 
-    // Validate the serial key for system-generated events
-    if (event.isGenerated_by_us()) {
-        boolean isSerialKeyValid = ticketRepository.verifyTicket(event.getEvent_id(), serialKey);
-        if (!isSerialKeyValid) {
-            model.addAttribute("error", "Invalid serial key for a system-generated event.");
+        // extract QR payload
+        serialKey = QRUtils.extractQRCodeFromPDF(tempFile);
+        Files.deleteIfExists(tempFile);
+
+        if (serialKey == null) {
+            model.addAttribute("error", "No QR code found in the uploaded PDF.");
             return "newEventTicketForm";
         }
+    } catch (IOException e) {
+        model.addAttribute("error", "Failed to process the uploaded PDF file.");
+        return "newEventTicketForm";
+    }
 
-        Ticket temp = ticketRepository.findBySerialKey(serialKey, event.getEvent_id());
-        if (temp == null) {
+    // 6) Create or enable ticket based on “generated_by_us”
+    if (event.isGenerated_by_us()) {
+        // verify that QR serialKey matches one of our pre-generated tickets
+        boolean valid = ticketRepository.verifyTicket(event.getEvent_id(), serialKey);
+        if (!valid) {
+            model.addAttribute("error", "Invalid serial key for this event.");
+            return "newEventTicketForm";
+        }
+        Ticket existing = ticketRepository.findBySerialKey(serialKey, event.getEvent_id());
+        if (existing == null) {
             model.addAttribute("error", "Serial key not found.");
             return "newEventTicketForm";
         }
-
-        temp.setFor_sale(true);
-        temp.setPrice(price);
-        temp.setDesc(description);
-        ticketRepository.save(temp);
+        existing.setFor_sale(true);
+        existing.setPrice(price);
+        existing.setDesc(description);
+        ticketRepository.save(existing);
     } else {
-        // Create a new ticket for non-system-generated events
-        Ticket temp = new Ticket(id, user.getUser_id(), price, description, serialKey, true, false, null);
-        ticketRepository.save(temp);
+        // create brand-new ticket if not system-generated
+        Ticket t = new Ticket(
+            id,
+            user.getUser_id(),
+            price,
+            description,
+            serialKey,
+            true,    // for_sale
+            false,   // is_sold
+            null     // pdfUrl or any other field
+        );
+        ticketRepository.save(t);
     }
 
     return "ticketCreateSuccess";
 }
+
 
         @GetMapping("/{id}/generateTickets")
         public String generateTicketsForm(@PathVariable int id, HttpSession session, Model model) {
