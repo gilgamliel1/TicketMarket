@@ -533,31 +533,30 @@ public String processNewEventTicket(@PathVariable int id,
         throw new IllegalArgumentException("Invalid action: " + action);
     }
 
-    @GetMapping("/myTickets")
-    public String myTickets(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loggedInUser");
-        if (user == null) {
-            return "redirect:/signin"; // Redirect to sign-in page if the user is not logged in
-        }
-
-        // Fetch tickets for the logged-in user
-        List<Ticket> myTickets = ticketRepository.findBySellerId(user.getUser_id());
-
-        // Create a map to store ticket IDs and their corresponding event names and
-        // dates
-        Map<Integer, String> ticketEventDetails = new HashMap<>();
-        for (Ticket ticket : myTickets) {
-            Event event = eventRepository.findById(ticket.getEvent_id())
-                    .orElseThrow(() -> new RuntimeException("Event not found for ticket ID " + ticket.getTicket_id()));
-            String eventDetails = event.getEvent_name() + " (Date: " + event.getEvent_date() + ")";
-            ticketEventDetails.put(ticket.getTicket_id(), eventDetails);
-        }
-
-        // Add tickets and their event details to the model
-        model.addAttribute("myTickets", myTickets);
-        model.addAttribute("ticketEventDetails", ticketEventDetails);
-
-        return "myTicketsPage"; // Ensure this matches the Thymeleaf template name
+   @GetMapping("/myTickets")
+public String myTickets(HttpSession session, Model model) {
+    User user = (User) session.getAttribute("loggedInUser");
+    if (user == null) {
+        return "redirect:/signin";
     }
+
+    List<Ticket> myTickets = ticketRepository.findBySellerId(user.getUser_id());
+    Map<Integer,String> ticketEventDetails = new HashMap<>();
+    for (Ticket ticket : myTickets) {
+        Event event = eventRepository.findById(ticket.getEvent_id())
+            .orElseThrow(() -> new RuntimeException("Event not found"));
+        ticketEventDetails.put(
+            ticket.getTicket_id(),
+            event.getEvent_name() + " (Date: " + event.getEvent_date() + ")"
+        );
+    }
+
+    // ← Add the logged-in user so Thymeleaf can resolve ${loggedInUser}
+    model.addAttribute("loggedInUser", user);
+    model.addAttribute("myTickets", myTickets);
+    model.addAttribute("ticketEventDetails", ticketEventDetails);
+    return "myTicketsPage";
+}
+
 
 }

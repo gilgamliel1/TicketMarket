@@ -111,15 +111,16 @@
             <div class="qr-section">
                 <canvas th:id="'qr-' + ${ticket.ticket_id}" width="150" height="150"
                         style="border: 1px solid #ddd; border-radius: 4px;"></canvas>
-                <button type="button"
-                        class="download-btn"
-                        th:attr="data-ticket-id=${ticket.ticket_id},
-                                 data-serial-key='${ticket.serialKey}',
-                                 data-description='${ticket.desc}',
-                                 data-event-details='${ticketEventDetails[ticket.ticket_id]}',
-                                 data-user-name='${loggedInUser.user_name}'">
-                    Download Ticket
-                </button>
+               <button type="button"
+        class="download-btn"
+        th:data-ticket-id="${ticket.ticket_id}"
+        th:data-serial-key="${ticket.serialKey}"
+        th:data-description="${ticket.desc}"
+        th:data-event-details="${ticketEventDetails[ticket.ticket_id]}"
+        th:data-user-name="${loggedInUser.user_name}">
+    Download Ticket
+</button>
+
             </div>
         </div>
     </div>
