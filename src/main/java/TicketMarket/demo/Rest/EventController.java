@@ -272,7 +272,7 @@ public String processNewEventTicket(@PathVariable int id,
         serialKey = QRUtils.extractQRCodeFromPDF(tempFile);
         Files.deleteIfExists(tempFile);
 
-        if (serialKey == null || ticketRepository.isTicketAlredayForSale(serialKey, event.getEvent_id())) {
+        if (serialKey == null || ticketRepository.isTicketAlredayForSale(serialKey, event.getEvent_id()) || ticketRepository.isSerialKeyAlredayExists(serialKey)) {
             model.addAttribute("error", "No QR code found in the uploaded PDF.");
             return "newEventTicketForm";
         }
