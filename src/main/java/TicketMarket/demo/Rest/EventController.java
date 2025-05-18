@@ -235,6 +235,7 @@ public String processNewEventTicket(@PathVariable int id,
         return "redirect:/signin";
     }
 
+    
     // 2) Load event
     Event event = eventRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Event not found"));
@@ -272,7 +273,10 @@ public String processNewEventTicket(@PathVariable int id,
         serialKey = QRUtils.extractQRCodeFromPDF(tempFile);
         Files.deleteIfExists(tempFile);
 
-        if (serialKey == null || ticketRepository.isTicketAlredayForSale(serialKey, event.getEvent_id()) || ticketRepository.isSerialKeyAlredayExists(serialKey)) {
+        if (serialKey == null || 
+        ticketRepository.findTicketsBySellerIdAndEventId(user.getUser_id(),event.getEvent_id()).size() > 0 || 
+        ticketRepository.isTicketAlredayForSale(serialKey, event.getEvent_id()) ||
+        ticketRepository.isSerialKeyAlredayExists(serialKey)) {
             model.addAttribute("error", "No QR code found in the uploaded PDF.");
             return "newEventTicketForm";
         }

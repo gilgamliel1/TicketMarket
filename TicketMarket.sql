@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS users;
 
 -- Create 'users' table
+
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     user_name VARCHAR(50) UNIQUE NOT NULL,
