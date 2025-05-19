@@ -82,8 +82,8 @@ INSERT INTO users (
 INSERT INTO events (
     event_name, event_date, event_loc, event_desc, event_owner, generated_by_us, tag
 ) VALUES
-('House Party', '2025-05-02 22:00:00', 'Beer Sheva', 'Party at my house', 'gil', FALSE, 'Parties'),
+('House Party', '2025-05-02 22:00:00', 'Beer Sheva', 'Party at my house', 'system', FALSE, 'Parties'),
 ('Live Coding Session', '2025-05-10 18:00:00', 'Ben-Gurion University, Building 28', 'An evening of real-time coding and pizza!', 'shahar', FALSE, 'Other'),
-('Startup Meetup', '2025-05-18 19:00:00', 'Tel Aviv Hub', 'Networking for tech entrepreneurs', 'idan', FALSE, 'Business'),
-('Beach Festival', '2025-06-01 16:00:00', 'Tel Aviv Beach', 'Music, food, and fun all evening!', 'dror', FALSE, 'Concert');
+('Startup Meetup', '2025-05-18 19:00:00', 'Tel Aviv Hub', 'Networking for tech entrepreneurs', 'system', FALSE, 'Business'),
+('Beach Festival', '2025-06-01 16:00:00', 'Tel Aviv Beach', 'Music, food, and fun all evening!', 'system', FALSE, 'Concert');
 

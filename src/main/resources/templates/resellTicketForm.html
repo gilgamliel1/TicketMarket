@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create New Ticket</title>
+    <title>Resell Ticket</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -77,24 +77,19 @@
 </head>
 <body>
 <div class="container">
-    <h1>Create New Ticket</h1>
-    <form th:action="@{'/event/' + ${event.event_id} + '/Tickets/processNewTicket'}"
-          method="POST" enctype="multipart/form-data">
+    <h1>Resell Ticket</h1>
+    <form th:action="@{'/event/' + ${event.event_id} + '/Tickets/processResellTicket'}"
+          method="POST">
         <div class="form-group">
             <label for="price">Price</label>
-            <input type="number" id="price" name="price" placeholder="Enter Ticket Price" required>
+            <input type="number" id="price" name="price" th:value="${ticket.price}" placeholder="Enter Ticket Price" required>
         </div>
         <div class="form-group">
             <label for="description">Description</label>
-            <input id="description" name="description" placeholder="Enter Ticket Description"></input>
+            <textarea id="description" name="description" placeholder="Enter Ticket Description" th:text="${ticket.desc}"></textarea>
         </div>
-        <div class="form-group">
-            <label for="file"
-                   th:text="${event.generated_by_us} ? 'Upload PDF Ticket (optional)' : 'Upload PDF Ticket (required)'"></label>
-<input type="file" id="file" name="file" accept="application/pdf"
-       th:attr="required=${!event.generated_by_us}">
-        </div>
-        <input type="submit" value="Create Ticket">
+        <input type="hidden" name="ticketId" th:value="${ticket.ticket_id}">
+        <input type="submit" value="Resell Ticket">
     </form>
     <a th:href="@{'/event/' + ${event.event_id} + '/Tickets'}" class="back-button">Back to tickets page</a>
 </div>

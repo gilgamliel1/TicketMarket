@@ -197,7 +197,7 @@
 <div class="header">
     <div class="welcome">
         <h1>Welcome, <span th:text="${user.first_name}">User</span>!</h1>
-        <p>Your location: <span id="user-location">Fetching location...</span></p>
+        <!-- <p>Your location: <span id="user-location">Fetching location...</span></p> -->
         <p>Your balance: <span th:text="${user.balance}">Loading...</span></p>
         <form th:action="@{/event/myTickets}" method="get">
             <button type="submit" style="padding: 10px 15px; font-size: 14px; background-color: #007bff; color: white; border: 2px solid white;
@@ -243,14 +243,6 @@
             <p>Other</p>
         </a>
     </div>
-    <!-- <div>
-        <form th:action="@{/event/myTickets}" method="get">
-            <button type="submit" style="padding: 10px 15px; font-size: 14px; background-color: #007bff; color: white; border: 2px solid white;
-            border-radius: 5px; cursor: pointer;">
-                My Tickets
-            </button>
-        </form>
-    </div> -->
 </div>
 
 <!-- Upcoming Events -->
@@ -272,42 +264,5 @@
     <button class="add-event-button">+</button>
 </a>
 
-<script>
-    function getLocation() {
-        const locationElement = document.getElementById("user-location");
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const latitude = position.coords.latitude;
-                    const longitude = position.coords.longitude;
-
-                    fetch(`https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=d01a46dbeed04d378740ac0f987a0d29`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error(`API Error: ${response.status}`);
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            const city = data?.results?.[0]?.components?.city || "Unknown City";
-                            locationElement.textContent = city;
-                        })
-                        .catch(error => {
-                            console.error("Error fetching location:", error);
-                            locationElement.textContent = "Unable to retrieve location.";
-                        });
-                },
-                error => {
-                    console.error("Geolocation error:", error.message);
-                    locationElement.textContent = "Location permission denied.";
-                }
-            );
-        } else {
-            locationElement.textContent = "Geolocation is not supported by your browser.";
-        }
-    }
-
-    window.onload = getLocation;
-</script>
 </body>
 </html>

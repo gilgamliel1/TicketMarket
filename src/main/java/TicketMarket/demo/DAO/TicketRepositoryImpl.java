@@ -82,7 +82,7 @@ public List<Ticket> findTicketsBySellerIdAndEventId(int seller_id, int event_id)
 @Override
     public boolean isSerialKeyAlredayExists (String serialKey){
             TypedQuery<Long> query = entityManager.createQuery(
-        "SELECT COUNT(t) FROM Ticket t WHERE t.serial_key = :serialKey AND  t.for_sale = true ", Long.class
+        "SELECT COUNT(t) FROM Ticket t WHERE t.serial_key = :serialKey ", Long.class
     );
     query.setParameter("serialKey", serialKey);
     Long count = query.getSingleResult();
