@@ -36,14 +36,10 @@ public class Ticket {
     @Column(name = "sold")
     private boolean sold; // New field added
 
-
-
-
     @Column(name = "generated_by_us")
     private boolean generated_by_us; // New field added
 
     public Ticket() {
-        this.ticket_id = -1;
         this.event_id = -1;
         this.seller_id = -1;
         this.price = -1;
@@ -56,7 +52,6 @@ public class Ticket {
     }
 
     public Ticket(int event_id, int seller_id ,  int price, String desc, String serial_key, boolean for_sale, boolean generated_by_us ) {
-        this.ticket_id = 50;
         this.event_id = event_id;
         this.seller_id = seller_id;
         this.price = price;

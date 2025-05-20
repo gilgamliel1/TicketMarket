@@ -99,7 +99,7 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
     if (generatedByUs) {
         try {
             ticketCount = Integer.parseInt(http.getParameter("ticket_count"));
-            if (ticketCount <= 0 || ticketCount > 200) { // Assuming a maximum of 1000 tickets
+            if (ticketCount <= 0 ) { // Assuming a maximum of 1000 tickets
                 model.addAttribute("error", "Ticket count must be a positive integer.");
                 return "createEventForm";
             }
@@ -454,12 +454,11 @@ public String processGenerateTickets(@PathVariable int id, HttpServletRequest ht
             return "generateTicketsForm";
         }
 
-        // Check if adding the new tickets would exceed the limit
-        if (currentTicketCount + ticketCount > 100) {
-            model.addAttribute("error", "Cannot generate tickets. Adding " + ticketCount + " tickets would exceed the limit of 100 tickets for this event.");
-            return "generateTicketsForm";
-        }
-
+if (currentTicketCount + ticketCount > 100) {
+    model.addAttribute("error", "Cannot generate tickets. Adding " + ticketCount + " tickets would exceed the limit of 100 tickets for this event.");
+    model.addAttribute("event", event); // <-- Make sure this is present!
+    return "generateTicketsForm";
+}
         // Generate tickets for the event
         for (int i = 0; i < ticketCount; i++) {
             String serialKey = generateSerialKey();
