@@ -69,75 +69,110 @@ public class EventController {
     }
 
     @RequestMapping(value = "/processEvent", method = RequestMethod.POST)
-    public String processEvent(HttpServletRequest http, HttpSession session, Model model) {
-        if (session.getAttribute("loggedInUser") == null)
-            return "redirect:/signin";
+public String processEvent(HttpServletRequest http, HttpSession session, Model model) {
+    if (session.getAttribute("loggedInUser") == null)
+        return "redirect:/signin";
 
-        // Retrieve event details
-        String name = http.getParameter("event_name");
-        LocalDateTime event_time = LocalDateTime.parse(http.getParameter("event_date"));
-        String eventLoc = http.getParameter("eventLoc");
-        String event_desc = http.getParameter("event_desc");
-        String tag = http.getParameter("tag");
-        String createTicketsToggle = http.getParameter("create-tickets-toggle");
+    // Retrieve event details
+    String name = http.getParameter("event_name");
+    LocalDateTime event_time = LocalDateTime.parse(http.getParameter("event_date"));
+    String eventLoc = http.getParameter("eventLoc");
+    String event_desc = http.getParameter("event_desc");
+    String tag = http.getParameter("tag");
+    String createTicketsToggle = http.getParameter("create-tickets-toggle");
 
-        // Set generated_by_us based on createTicketsToggle
-        boolean generatedByUs = "on".equals(createTicketsToggle);
+    // Set generated_by_us based on createTicketsToggle
+    boolean generatedByUs = "on".equals(createTicketsToggle);
 
-        User temp = (User) session.getAttribute("loggedInUser");
+    User temp = (User) session.getAttribute("loggedInUser");
 
-        // Check if the event already exists
-        if (eventRepository.isEventExist(name)) {
-            model.addAttribute("error", "Event name already exists!");
-            return "createEventForm";
-        }
+    // Check if the event already exists
+    if (eventRepository.isEventExist(name)) {
+        model.addAttribute("error", "Event name already exists!");
+        return "createEventForm";
+    }
 
-        Event newEvent = null ; 
-        if (generatedByUs) {
-            newEvent = new Event(name, event_time, eventLoc, event_desc, temp.getUser_name(), tag, generatedByUs);
-
-        }
-        else {
-            newEvent = new Event(name, event_time, eventLoc, event_desc, "system", tag, generatedByUs);
-
-        }
-        
-
-        // Create the event
-        eventRepository.save(newEvent); // Ensure the event is saved before creating tickets
-        System.out.println("Event created with ID: " + newEvent.getEvent_id());
-
-        // Check if the "create tickets" checkbox is checked
-        if (generatedByUs) {
-            // Retrieve ticket details
-            String ticketCountStr = http.getParameter("ticket_count");
-            String ticketPriceStr = http.getParameter("ticket_price");
-
-            try {
-                int ticketCount = Integer.parseInt(ticketCountStr);
-                int ticketPrice = Integer.parseInt(ticketPriceStr);
-
-                if (ticketCount <= 0 || ticketPrice <= 0) {
-                    model.addAttribute("error", "Ticket count and price must be positive integers.");
-                    return "createEventForm";
-                }
-
-                // Create tickets for the event
-                for (int i = 0; i < ticketCount; i++) {
-                    String serialKey = generateSerialKey();
-                    Ticket ticket = new Ticket(newEvent.getEvent_id(), temp.getUser_id(), ticketPrice,
-                            "Ticket " + (i + 1), serialKey, true, true , "");
-                    ticketRepository.save(ticket);
-                    System.out.println("Ticket created with Serial Key: " + serialKey);
-                }
-            } catch (NumberFormatException e) {
-                model.addAttribute("error", "Invalid ticket count or price. Please enter valid numbers.");
+    Event newEvent = null;
+    int ticketPrice = 1000; 
+    // Retrieve ticket count if "create tickets" is enabled
+    int ticketCount = 0;
+    if (generatedByUs) {
+        try {
+            ticketCount = Integer.parseInt(http.getParameter("ticket_count"));
+            if (ticketCount <= 0 || ticketCount > 200) { // Assuming a maximum of 1000 tickets
+                model.addAttribute("error", "Ticket count must be a positive integer.");
                 return "createEventForm";
             }
-        }
+            ticketPrice = Integer.parseInt(http.getParameter("ticket_price"));
+            newEvent = new Event(
+        name,
+        event_time,
+        eventLoc,
+        event_desc,
+        temp.getUser_name(),
+        tag,
+        generatedByUs,
+        temp.getUser_name(),
+        ticketPrice, // Default max ticket price
+        ticketCount // Number of tickets
+    );
 
-        return "eventCreatedSuccess";
+        } catch (NumberFormatException e) {
+            model.addAttribute("error", "Invalid ticket count. Please enter a valid number.");
+            return "createEventForm";
+        }
     }
+    else{
+        newEvent = new Event(
+        name,
+        event_time,
+        eventLoc,
+        event_desc,
+        "system",
+        tag,
+        generatedByUs,
+        temp.getUser_name(),
+        1000, // Default max ticket price
+        ticketCount // Number of tickets
+    );
+    }
+
+   
+
+    eventRepository.save(newEvent); // Save the event first to generate its ID
+    System.out.println("Event created with ID: " + newEvent.getEvent_id());
+
+    // Create tickets if "create tickets" is enabled
+    if (generatedByUs) {
+        try {
+            if (ticketPrice <= 0) {
+                model.addAttribute("error", "Ticket price must be a positive integer.");
+                return "createEventForm";
+            }
+
+            for (int i = 0; i < ticketCount; i++) {
+                String serialKey = generateSerialKey();
+                Ticket ticket = new Ticket(
+                    newEvent.getEvent_id(),
+                    temp.getUser_id(),
+                    ticketPrice,
+                    "Ticket " + (i + 1),
+                    serialKey,
+                    true, // for_sale
+                    false, // is_sold
+                    null // pdfUrl
+                );
+                ticketRepository.save(ticket);
+                System.out.println("Ticket created with Serial Key: " + serialKey);
+            }
+        } catch (NumberFormatException e) {
+            model.addAttribute("error", "Invalid ticket price. Please enter a valid number.");
+            return "createEventForm";
+        }
+    }
+
+    return "eventCreatedSuccess";
+}
 
     @RequestMapping("/success_event_created")
     public String success_event_created(HttpSession session) {

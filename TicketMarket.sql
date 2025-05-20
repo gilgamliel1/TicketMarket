@@ -10,7 +10,6 @@ DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS users;
 
 -- Create 'users' table
-
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     user_name VARCHAR(50) UNIQUE NOT NULL,
@@ -34,8 +33,11 @@ CREATE TABLE events (
     event_desc VARCHAR(255) DEFAULT NULL,
     event_owner VARCHAR(255) NOT NULL,
     event_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    generated_by_us BOOLEAN DEFAULT FALSE, -- added
-    tag VARCHAR(255) NOT NULL
+    generated_by_us BOOLEAN DEFAULT FALSE, -- Indicates if the event is system-generated
+    created_by VARCHAR(255) NOT NULL DEFAULT 'system', -- Field to track who created the event
+    ticket_max_price INT DEFAULT 1000, -- Field to store the maximum ticket price
+    number_of_tickets INT DEFAULT 0, -- Field to store the total number of tickets
+    tag VARCHAR(255) NOT NULL -- Field to categorize the event
 ) ENGINE=InnoDB;
 
 -- Create 'tickets' table
@@ -50,7 +52,7 @@ CREATE TABLE tickets (
     generated_by_us BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     serial_key VARCHAR(50) NOT NULL,
-    pdf_url VARCHAR(255), -- new column
+    pdf_url VARCHAR(255), -- Field to store the PDF URL
     FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (seller_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
@@ -78,12 +80,11 @@ INSERT INTO users (
 ('idan', 'Idan', 'Azama', '111222333', 'idan@example.com', '1234', 'https://example.com/profile3.jpg', 'Backend developer', 50),
 ('dror', 'Dror', 'Alon', '444555666', 'dror@example.com', '1234', 'https://example.com/profile4.jpg', 'DJ and event host', 75);
 
--- Insert example events
+-- Insert example events with new fields
 INSERT INTO events (
-    event_name, event_date, event_loc, event_desc, event_owner, generated_by_us, tag
+    event_name, event_date, event_loc, event_desc, event_owner, generated_by_us, tag, created_by, ticket_max_price, number_of_tickets
 ) VALUES
-('House Party', '2025-05-02 22:00:00', 'Beer Sheva', 'Party at my house', 'system', FALSE, 'Parties'),
-('Live Coding Session', '2025-05-10 18:00:00', 'Ben-Gurion University, Building 28', 'An evening of real-time coding and pizza!', 'shahar', FALSE, 'Other'),
-('Startup Meetup', '2025-05-18 19:00:00', 'Tel Aviv Hub', 'Networking for tech entrepreneurs', 'system', FALSE, 'Business'),
-('Beach Festival', '2025-06-01 16:00:00', 'Tel Aviv Beach', 'Music, food, and fun all evening!', 'system', FALSE, 'Concert');
-
+('House Party', '2025-05-02 22:00:00', 'Beer Sheva', 'Party at my house', 'gil', FALSE, 'Parties', 'gil', 100, 50),
+('Live Coding Session', '2025-05-10 18:00:00', 'Ben-Gurion University, Building 28', 'An evening of real-time coding and pizza!', 'shahar', FALSE, 'Other', 'shahar', 50, 30),
+('Startup Meetup', '2025-05-18 19:00:00', 'Tel Aviv Hub', 'Networking for tech entrepreneurs', 'idan', FALSE, 'Business', 'idan', 200, 100),
+('Beach Festival', '2025-06-01 16:00:00', 'Tel Aviv Beach', 'Music, food, and fun all evening!', 'dror', FALSE, 'Concert', 'dror', 300, 200);

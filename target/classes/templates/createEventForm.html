@@ -172,6 +172,11 @@
 <div class="container">
     <h1>Create New Event</h1>
 
+    <!-- Informational Comments -->
+    <div class="info" style="margin-bottom: 20px; font-size: 14px; color: #555; text-align: center;">
+        <p>Note: Each user can create a maximum of 3 events.</p>
+    </div>
+
     <!-- Error message -->
     <p class="error" th:if="${error}" th:text="${error}"></p>
 
@@ -207,7 +212,8 @@
         <!-- Additional ticket options -->
         <div id="toggle-section" class="toggle-section" style="display: none;">
             <label for="ticket_count" style="margin-bottom: 10px;">Number of Tickets:</label>
-            <input type="number" id="ticket_count" name="ticket_count" placeholder="Enter number of tickets" style="margin-bottom: 15px;" />
+            <input type="number" id="ticket_count" name="ticket_count" placeholder="Enter number of tickets" style="margin-bottom: 5px;" />
+            <p style="font-size: 12px; color: #555; margin-top: 0;">Note: The maximum number of tickets allowed per event is 200.</p>
 
             <label for="ticket_price" style="margin-bottom: 10px;">Price per Ticket:</label>
             <input type="number" id="ticket_price" name="ticket_price" placeholder="Enter ticket price" min="1" style="margin-bottom: 15px;" />

@@ -34,7 +34,16 @@ public class Event {
     private String tag;
 
     @Column(name = "generated_by_us")
-    private boolean generated_by_us; // New field added
+    private boolean generated_by_us;
+
+    @Column(name = "created_by")
+    private String created_by;
+
+    @Column(name = "ticket_max_price")
+    private Integer ticket_max_price;
+
+    @Column(name = "number_of_tickets")
+    private int number_of_tickets; // New field added
 
     public Event() {
         this.event_id = 0;
@@ -45,10 +54,13 @@ public class Event {
         this.event_owner = "NoOne";
         this.event_created_at = LocalDateTime.now();
         this.tag = "Other";
-        this.generated_by_us = false; // Default value
+        this.generated_by_us = false;
+        this.created_by = "system";
+        this.ticket_max_price = 1000;
+        this.number_of_tickets = 0; // Default value
     }
 
-    public Event(String event_name, LocalDateTime event_date, String eventLoc, String event_desc, String event_owner, String tag, boolean generated_by_us) {
+    public Event(String event_name, LocalDateTime event_date, String eventLoc, String event_desc, String event_owner, String tag, boolean generated_by_us, String created_by, Integer ticket_max_price, int number_of_tickets) {
         this.event_name = event_name;
         this.event_date = event_date;
         this.eventLoc = eventLoc;
@@ -57,6 +69,9 @@ public class Event {
         this.event_created_at = LocalDateTime.now();
         this.tag = tag;
         this.generated_by_us = generated_by_us;
+        this.created_by = created_by;
+        this.ticket_max_price = ticket_max_price;
+        this.number_of_tickets = number_of_tickets;
     }
 
     @Override
@@ -71,6 +86,9 @@ public class Event {
                 ", event_created_at=" + event_created_at +
                 ", tag='" + tag + '\'' +
                 ", generated_by_us=" + generated_by_us +
+                ", created_by='" + created_by + '\'' +
+                ", ticket_max_price=" + ticket_max_price +
+                ", number_of_tickets=" + number_of_tickets +
                 '}';
     }
 
@@ -144,5 +162,29 @@ public class Event {
 
     public void setGenerated_by_us(boolean generated_by_us) {
         this.generated_by_us = generated_by_us;
+    }
+
+    public String getCreated_by() {
+        return created_by;
+    }
+
+    public void setCreated_by(String created_by) {
+        this.created_by = created_by;
+    }
+
+    public Integer getTicket_max_price() {
+        return ticket_max_price;
+    }
+
+    public void setTicket_max_price(Integer ticket_max_price) {
+        this.ticket_max_price = ticket_max_price;
+    }
+
+    public int getNumber_of_tickets() {
+        return number_of_tickets;
+    }
+
+    public void setNumber_of_tickets(int number_of_tickets) {
+        this.number_of_tickets = number_of_tickets;
     }
 }
