@@ -45,7 +45,7 @@ public class EventRepositoryImpl implements EventCustomRepository {
     @Override
     public int amountOfAvilableTickets(int eventId) {
         TypedQuery<Long> query = entityManager.createQuery(
-            "SELECT COUNT(t) FROM Ticket t WHERE t.for_sale = TRUE AND t.event_id = :eventId AND t.event.event_date > CURRENT_TIMESTAMP", Long.class
+            "SELECT COUNT(t) FROM Ticket t JOIN Event e ON t.event_id = e.event_id WHERE t.for_sale = TRUE AND t.event_id = :eventId AND e.event_date > CURRENT_TIMESTAMP", Long.class
         );
         query.setParameter("eventId", eventId);
         return query.getSingleResult().intValue();
@@ -54,7 +54,7 @@ public class EventRepositoryImpl implements EventCustomRepository {
     @Override
     public int amountOfSoldTickets(int eventId) {
         TypedQuery<Long> query = entityManager.createQuery(
-            "SELECT COUNT(t) FROM Ticket t WHERE t.sold = TRUE AND t.for_sale = FALSE AND t.event_id = :eventId AND t.event.event_date > CURRENT_TIMESTAMP", Long.class
+            "SELECT COUNT(t) FROM Ticket t JOIN Event e ON t.event_id = e.event_id WHERE t.sold = TRUE AND t.for_sale = FALSE AND t.event_id = :eventId AND e.event_date > CURRENT_TIMESTAMP", Long.class
         );
         query.setParameter("eventId", eventId);
         return query.getSingleResult().intValue();
@@ -62,9 +62,8 @@ public class EventRepositoryImpl implements EventCustomRepository {
 
     @Override
     public int amountOfLookingForTickets(int eventId) {
-        // Assuming this method will also need to filter by future events
         TypedQuery<Long> query = entityManager.createQuery(
-            "SELECT COUNT(t) FROM Ticket t WHERE t.event_id = :eventId AND t.event.event_date > CURRENT_TIMESTAMP", Long.class
+            "SELECT COUNT(t) FROM Ticket t JOIN Event e ON t.event_id = e.event_id WHERE t.event_id = :eventId AND e.event_date > CURRENT_TIMESTAMP", Long.class
         );
         query.setParameter("eventId", eventId);
         return query.getSingleResult().intValue();
