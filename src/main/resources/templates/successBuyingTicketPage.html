@@ -59,7 +59,7 @@
     <p>Thank you for your purchase. You have successfully bought the ticket.</p>
     <p><strong>Event:</strong> <span th:text="${event.event_name}"></span></p>
     <p><strong>Ticket Description:</strong> <span th:text="${ticket.desc}"></span></p>
-    <p><strong>Price:</strong> $<span th:text="${ticket.price}"></span></p>
+    <p><strong>Price:</strong> ₪<span th:text="${ticket.price}"></span></p>
     <div class="btn-container">
         <a th:href="@{'/event/' + ${event.event_id} + '/Tickets'}">Back to Tickets Page</a>
     </div>
