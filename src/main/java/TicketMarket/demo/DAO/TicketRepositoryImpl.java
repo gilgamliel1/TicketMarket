@@ -57,7 +57,6 @@ public List<Ticket> findTicketsBySellerIdAndEventId(int seller_id, int event_id)
     query.setParameter("event_id", event_id);
     return query.getResultList();
 }
-
     @Override
     public boolean generatedByUsTicket(String serialKey) {
         TypedQuery<Long> query = entityManager.createQuery(

@@ -159,8 +159,7 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
                     "Ticket " + (i + 1),
                     serialKey,
                     true, // for_sale
-                    false, // is_sold
-                    null // pdfUrl
+                    false // is_sold
                 );
                 ticketRepository.save(ticket);
                 System.out.println("Ticket created with Serial Key: " + serialKey);
@@ -212,7 +211,6 @@ public String uploadTicketPdf(@PathVariable int eventId,
         Path filePath = Paths.get(uploadDir + fileName);
         Files.write(filePath, file.getBytes());
 
-        ticket.setPdfUrl(filePath.toString());
         ticketRepository.save(ticket);
         return "redirect:/event/" + eventId + "/Tickets";
     } catch (IOException e) {
@@ -364,8 +362,7 @@ public String processNewEventTicket(@PathVariable int id,
             description,
             serialKey,
             true,    // for_sale
-            false,   // is_sold
-            null     // pdfUrl or any other field
+            false   // is_sold
         );
         ticketRepository.save(t);
 
@@ -424,48 +421,60 @@ public String processResellTicket(@PathVariable int id,
             return "generateTicketsForm"; // Reuse the create event form for ticket generation
 }
 
-        @PostMapping("/{id}/generateTickets")
-        public String processGenerateTickets(@PathVariable int id, HttpServletRequest http, HttpSession session, Model model) {
-            User user = (User) session.getAttribute("loggedInUser");
-            if (user == null) {
-                return "redirect:/signin"; // Redirect to sign-in page if the user is not logged in
-            }
+@PostMapping("/{id}/generateTickets")
+public String processGenerateTickets(@PathVariable int id, HttpServletRequest http, HttpSession session, Model model) {
+    User user = (User) session.getAttribute("loggedInUser");
+    if (user == null) {
+        return "redirect:/signin"; // Redirect to sign-in page if the user is not logged in
+    }
 
-            Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
-            if (!event.getEvent_owner().equals(user.getUser_name())) {
-                model.addAttribute("error", "You are not authorized to generate tickets for this event.");
-                return "redirect:/event/" + id;
-            }
+    Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+    if (!event.getEvent_owner().equals(user.getUser_name())) {
+        model.addAttribute("error", "You are not authorized to generate tickets for this event.");
+        return "redirect:/event/" + id;
+    }
 
-            // Retrieve ticket details
-            String ticketCountStr = http.getParameter("ticket_count");
-            String ticketPriceStr = http.getParameter("ticket_price");
+    // Check the current number of tickets for the event
+    int currentTicketCount = ticketRepository.ticketsByEventId(id).size();
+    if (currentTicketCount >= 100) {
+        model.addAttribute("error", "Cannot generate more tickets. The total number of tickets for this event has reached the limit of 100.");
+        return "redirect:/event/" + id + "/tickets";
+    }
 
-            try {
-                int ticketCount = Integer.parseInt(ticketCountStr);
-                int ticketPrice = Integer.parseInt(ticketPriceStr);
+    // Retrieve ticket details
+    String ticketCountStr = http.getParameter("ticket_count");
+    String ticketPriceStr = http.getParameter("ticket_price");
 
-                if (ticketCount <= 0 || ticketPrice <= 0) {
-                    model.addAttribute("error", "Ticket count and price must be positive integers.");
-                    return "generateTicketsForm";
-                }
+    try {
+        int ticketCount = Integer.parseInt(ticketCountStr);
+        int ticketPrice = Integer.parseInt(ticketPriceStr);
 
-                // Generate tickets for the event
-                for (int i = 0; i < ticketCount; i++) {
-                    String serialKey = generateSerialKey();
-                    Ticket ticket = new Ticket(event.getEvent_id(), user.getUser_id(), ticketPrice,
-                            "Generated Ticket " + (i + 1), serialKey, true, true , "");
-                    ticketRepository.save(ticket);
-                    System.out.println("Generated ticket with Serial Key: " + serialKey);
-                }
-            } catch (NumberFormatException e) {
-                model.addAttribute("error", "Invalid ticket count or price. Please enter valid numbers.");
-                return "generateTicketsForm";
-            }
-
-            return "redirect:/event/" + id; // Redirect back to the event page
+        if (ticketCount <= 0 || ticketPrice <= 0) {
+            model.addAttribute("error", "Ticket count and price must be positive integers.");
+            return "generateTicketsForm";
         }
 
+        // Check if adding the new tickets would exceed the limit
+        if (currentTicketCount + ticketCount > 100) {
+            model.addAttribute("error", "Cannot generate tickets. Adding " + ticketCount + " tickets would exceed the limit of 100 tickets for this event.");
+            return "generateTicketsForm";
+        }
+
+        // Generate tickets for the event
+        for (int i = 0; i < ticketCount; i++) {
+            String serialKey = generateSerialKey();
+            Ticket ticket = new Ticket(event.getEvent_id(), user.getUser_id(), ticketPrice,
+                    "Generated Ticket " + (i + 1), serialKey, true, true);
+            ticketRepository.save(ticket);
+            System.out.println("Generated ticket with Serial Key: " + serialKey);
+        }
+    } catch (NumberFormatException e) {
+        model.addAttribute("error", "Invalid ticket count or price. Please enter valid numbers.");
+        return "generateTicketsForm";
+    }
+
+    return "redirect:/event/" + id; // Redirect back to the event page
+}
     
     public boolean generatedByUsTicket(String serialKey) {
         return ticketRepository.generatedByUsTicket(serialKey);
