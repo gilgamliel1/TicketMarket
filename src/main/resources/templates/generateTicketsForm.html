@@ -92,10 +92,10 @@
     <!-- Ticket generation form -->
     <form th:action="@{/event/{id}/generateTickets(id=${event.event_id})}" method="post">
         <label for="ticket_count">Number of Tickets:</label>
-        <input type="number" id="ticket_count" name="ticket_count" placeholder="Enter number of tickets" required>
+        <input type="number" id="ticket_count" name="ticket_count" placeholder="Enter number of tickets" required min="1">
 
         <label for="ticket_price">Ticket Price:</label>
-        <input type="number" id="ticket_price" name="ticket_price" placeholder="Enter ticket price" required>
+        <input type="number" id="ticket_price" name="ticket_price" placeholder="Enter ticket price" required min="1">
 
         <button type="submit">Generate Tickets</button>
     </form>

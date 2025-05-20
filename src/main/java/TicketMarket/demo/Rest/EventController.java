@@ -438,8 +438,7 @@ public String processGenerateTickets(@PathVariable int id, HttpServletRequest ht
     int currentTicketCount = ticketRepository.ticketsByEventId(id).size();
     if (currentTicketCount >= 100) {
         model.addAttribute("error", "Cannot generate more tickets. The total number of tickets for this event has reached the limit of 100.");
-        return "redirect:/event/" + id + "/tickets";
-    }
+return "redirect:/event/" + id + "/Tickets";    }
 
     // Retrieve ticket details
     String ticketCountStr = http.getParameter("ticket_count");
