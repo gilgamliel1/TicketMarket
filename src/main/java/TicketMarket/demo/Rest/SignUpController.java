@@ -41,6 +41,11 @@ public class SignUpController {
         model.addAttribute("verifypassword", verifypassword);
         //        model.addAttribute("bio", bio);
 
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.com$")) {
+        model.addAttribute("error", "Invalid email format. Please enter a valid email like user@example.com");
+        return "signUpForm";
+    }
+
         if (repository.isUsernameExist(userName)){
             model.addAttribute("error", "Username already exists. Please choose another.");
             return "signUpForm";
@@ -50,6 +55,10 @@ public class SignUpController {
             userIdNumber = Integer.parseInt(userIdNumberStr);
         } catch (NumberFormatException e) {
             model.addAttribute("error", "Invalid user ID number. Please enter a valid number.");
+            return "signUpForm";
+        }
+        if (isIsraeliIdNumber(userIdNumberStr) == false){
+            model.addAttribute("error", "Invalid Israeli ID number. Please enter a valid number.");
             return "signUpForm";
         }
         if (repository.isUserIdExist(userIdNumber)){
@@ -71,5 +80,20 @@ public class SignUpController {
         return "signUpSuccess";
     }
 
+    public static boolean isIsraeliIdNumber(String id) {
+    id = id.trim();
+    if (id.length() > 9 || !id.matches("\\d+")) return false;
+    // Pad with leading zeros if needed
+    while (id.length() < 9) {
+        id = "0" + id;
+    }
+    int sum = 0;
+    for (int i = 0; i < 9; i++) {
+        int digit = Character.getNumericValue(id.charAt(i));
+        int step = digit * ((i % 2) + 1);
+        sum += (step > 9) ? step - 9 : step;
+    }
+    return sum % 10 == 0;
+}
 
 }
