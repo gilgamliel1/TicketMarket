@@ -74,10 +74,10 @@ INSERT INTO users (
     user_name, user_first_name, user_last_name, user_id_number,
     email, password_hash, profile_picture_url, bio, wallet_balance
 ) VALUES
-('gil', 'gil', 'gamliel', '123456789', 'admin@example.com', '1234', 'https://example.com/profile1.jpg', 'System administrator', 100),
-('shahar', 'shahar', 'agadi', '987654321', 'john@example.com', '1234', 'https://example.com/profile2.jpg', 'Event lover and party goer', 100),
-('idan', 'Idan', 'Azama', '111222333', 'idan@example.com', '1234', 'https://example.com/profile3.jpg', 'Backend developer', 50),
-('dror', 'Dror', 'Alon', '444555666', 'dror@example.com', '1234', 'https://example.com/profile4.jpg', 'DJ and event host', 75);
+('gil', 'gil', 'gamliel', '208151035', 'admin@example.com', '1234', 'https://example.com/profile1.jpg', 'System administrator', 100),
+('shahar', 'shahar', 'agadi', '207848847', 'john@example.com', '1234', 'https://example.com/profile2.jpg', 'Event lover and party goer', 100),
+('idan', 'Idan', 'Azama', '206915308', 'idan@example.com', '1234', 'https://example.com/profile3.jpg', 'Backend developer', 50),
+('dror', 'Dror', 'Alon', '206000028', 'dror@example.com', '1234', 'https://example.com/profile4.jpg', 'DJ and event host', 75);
 
 -- Insert example events with new fields
 INSERT INTO events (
@@ -85,5 +85,5 @@ INSERT INTO events (
 ) VALUES
 ('House Party', '2025-05-25 22:00:00', 'Beer Sheva', 'Party at my house', 'System', FALSE, 'Parties', 'gil', 1000, 50),
 ('Live Coding Session', '2025-05-26 18:00:00', 'Ben-Gurion University, Building 28', 'An evening of real-time coding and pizza!', 'System', FALSE, 'Other', 'shahar', 1000, 30),
-('Startup Meetup', '2025-05-27 19:00:00', 'Tel Aviv Hub', 'Networking for tech entrepreneurs', 'System', FALSE, 'Business', 'idan', 1000, 100),
+('Startup Meetup', '2025-05-27 19:00:00', 'Tel Aviv Hub', 'Networking for tech entrepreneurs', 'System', FALSE, 'Other', 'idan', 1000, 100),
 ('Beach Festival', '2025-06-28 16:00:00', 'Tel Aviv Beach', 'Music, food, and fun all evening!', 'System', FALSE, 'Concert', 'dror', 1000, 200);

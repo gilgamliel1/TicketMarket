@@ -598,7 +598,9 @@ public String processGenerateTickets(
         }
         String action = request.getParameter("action");
         if ("delete".equals(action)) {
-            ticketRepository.delete(ticket);
+            ticket.setFor_sale(false);
+            ticketRepository.save(ticket);
+
             return "redirect:/event/" + eventId + "/Tickets";
         }
 
