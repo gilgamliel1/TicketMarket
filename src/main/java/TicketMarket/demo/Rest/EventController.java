@@ -2,6 +2,8 @@ package TicketMarket.demo.Rest;
 
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -100,7 +102,7 @@ public class EventController {
         if (generatedByUs) {
             try {
                 ticketCount = Integer.parseInt(http.getParameter("ticket_count"));
-                if (ticketCount <= 0) { // Assuming a maximum of 1000 tickets
+                if (ticketCount < 0) { // Assuming a maximum of 1000 tickets
                     model.addAttribute("error", "Ticket count must be a positive integer.");
                     return "createEventForm";
                 }
@@ -143,7 +145,7 @@ public class EventController {
         // Create tickets if "create tickets" is enabled
         if (generatedByUs) {
             try {
-                if (ticketPrice <= 0) {
+                if (ticketPrice < 0) {
                     model.addAttribute("error", "Ticket price must be a positive integer.");
                     return "createEventForm";
                 }
@@ -437,62 +439,63 @@ public class EventController {
         return "generateTicketsForm"; // Reuse the create event form for ticket generation
     }
 
-    @PostMapping("/{id}/generateTickets")
-    public String processGenerateTickets(@PathVariable int id, HttpServletRequest http, HttpSession session,
-            Model model) {
-        User user = (User) session.getAttribute("loggedInUser");
-        if (user == null) {
-            return "redirect:/signin"; // Redirect to sign-in page if the user is not logged in
-        }
-
-        Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
-        if (!event.getEvent_owner().equals(user.getUser_name())) {
-            model.addAttribute("error", "You are not authorized to generate tickets for this event.");
-            return "redirect:/event/" + id;
-        }
-
-        // Check the current number of tickets for the event
-        int currentTicketCount = ticketRepository.ticketsByEventId(id).size();
-        if (currentTicketCount >= 100) {
-            model.addAttribute("error",
-                    "Cannot generate more tickets. The total number of tickets for this event has reached the limit of 100.");
-            return "redirect:/event/" + id + "/Tickets";
-        }
-
-        // Retrieve ticket details
-        String ticketCountStr = http.getParameter("ticket_count");
-        String ticketPriceStr = http.getParameter("ticket_price");
-
-        try {
-            int ticketCount = Integer.parseInt(ticketCountStr);
-            int ticketPrice = Integer.parseInt(ticketPriceStr);
-
-            if (ticketCount <= 0 || ticketPrice <= 0) {
-                model.addAttribute("error", "Ticket count and price must be positive integers.");
-                return "generateTicketsForm";
-            }
-
-            if (currentTicketCount + ticketCount > 100) {
-                model.addAttribute("error", "Cannot generate tickets. Adding " + ticketCount
-                        + " tickets would exceed the limit of 100 tickets for this event.");
-                model.addAttribute("event", event); // <-- Make sure this is present!
-                return "generateTicketsForm";
-            }
-            // Generate tickets for the event
-            for (int i = 0; i < ticketCount; i++) {
-                String serialKey = generateSerialKey();
-                Ticket ticket = new Ticket(event.getEvent_id(), user.getUser_id(), ticketPrice,
-                        "Generated Ticket " + (i + 1), serialKey, true, true);
-                ticketRepository.save(ticket);
-                System.out.println("Generated ticket with Serial Key: " + serialKey);
-            }
-        } catch (NumberFormatException e) {
-            model.addAttribute("error", "Invalid ticket count or price. Please enter valid numbers.");
-            return "generateTicketsForm";
-        }
-
-        return "redirect:/event/" + id + "/Tickets"; // Redirect back to the event page
+@PostMapping("/{id}/generateTickets")
+public String processGenerateTickets(
+        @PathVariable int id,
+        HttpServletRequest http,
+        HttpSession session,
+        Model model,
+        RedirectAttributes redirectAttributes) {
+    User user = (User) session.getAttribute("loggedInUser");
+    if (user == null) {
+        return "redirect:/signin";
     }
+
+    Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+    if (!event.getEvent_owner().equals(user.getUser_name())) {
+        redirectAttributes.addFlashAttribute("error", "You are not authorized to generate tickets for this event.");
+        return "redirect:/event/" + id + "/generateTickets";
+    }
+
+    int currentTicketCount = ticketRepository.ticketsByEventId(id).size();
+    if (currentTicketCount >= 100) {
+        redirectAttributes.addFlashAttribute("error",
+                "Cannot generate more tickets. The total number of tickets for this event has reached the limit of 100.");
+        return "redirect:/event/" + id + "/generateTickets";
+    }
+
+    String ticketCountStr = http.getParameter("ticket_count");
+    String ticketPriceStr = http.getParameter("ticket_price");
+
+    try {
+        int ticketCount = Integer.parseInt(ticketCountStr);
+        int ticketPrice = Integer.parseInt(ticketPriceStr);
+
+        if (ticketCount <= 0 || ticketPrice < 0) {
+            redirectAttributes.addFlashAttribute("error", "Ticket count and price must be positive integers.");
+            return "redirect:/event/" + id + "/generateTickets";
+        }
+
+        if (currentTicketCount + ticketCount > 100) {
+            redirectAttributes.addFlashAttribute("error", "Cannot generate tickets. Adding " + ticketCount
+                    + " tickets would exceed the limit of 100 tickets for this event.");
+            return "redirect:/event/" + id + "/generateTickets";
+        }
+        // Generate tickets for the event
+        for (int i = 0; i < ticketCount; i++) {
+            String serialKey = generateSerialKey();
+            Ticket ticket = new Ticket(event.getEvent_id(), user.getUser_id(), ticketPrice,
+                    "Generated Ticket " + (i + 1), serialKey, true, true);
+            ticketRepository.save(ticket);
+            System.out.println("Generated ticket with Serial Key: " + serialKey);
+        }
+    } catch (NumberFormatException e) {
+        redirectAttributes.addFlashAttribute("error", "Invalid ticket count or price. Please enter valid numbers.");
+        return "redirect:/event/" + id + "/generateTickets";
+    }
+
+    return "redirect:/event/" + id + "/Tickets";
+}
 
     @GetMapping("/{eventId}/Tickets/{TicketId}")
     public String buyEventTicket(@PathVariable int eventId, @PathVariable int TicketId, HttpSession session,
