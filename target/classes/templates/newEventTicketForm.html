@@ -78,11 +78,15 @@
 <body>
 <div class="container">
     <h1>Create New Ticket</h1>
+    <!-- Show error message if present -->
+    <div th:if="${error}" style="color: red; margin-bottom: 10px;">
+        <b th:text="${error}"></b>
+    </div>
     <form th:action="@{'/event/' + ${event.event_id} + '/Tickets/processNewTicket'}"
           method="POST" enctype="multipart/form-data">
         <div class="form-group">
             <label for="price">Price</label>
-            <input type="number" id="price" name="price" placeholder="Enter Ticket Price" required>
+            <input type="number" id="price" name="price" placeholder="Enter Ticket Price" min ="0" max="1000" required>
         </div>
         <div class="form-group">
             <label for="description">Description</label>

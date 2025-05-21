@@ -89,6 +89,11 @@
 <div class="container">
     <h1>Generate Tickets</h1>
 
+    <!-- Show error message if present -->
+    <div th:if="${error}" style="color: red; margin-bottom: 15px; text-align: center;">
+        <b th:text="${error}"></b>
+    </div>
+
     <!-- Ticket generation form -->
     <form th:action="@{/event/{id}/generateTickets(id=${event.event_id})}" method="post">
         <label for="ticket_count">Number of Tickets:</label>

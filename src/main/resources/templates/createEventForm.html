@@ -177,8 +177,10 @@
         <p>Note: Each user can create a maximum of 3 events.</p>
     </div>
 
-    <!-- Error message -->
-    <p class="error" th:if="${error}" th:text="${error}"></p>
+    <!-- Show error message if present -->
+    <div th:if="${error}" style="color: red; margin-bottom: 10px;">
+        <b th:text="${error}"></b>
+    </div>
 
     <!-- Event creation form -->
     <form th:action="@{/event/processEvent}" method="POST" onsubmit="return validateForm(event)">

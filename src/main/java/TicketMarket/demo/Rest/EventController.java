@@ -1,4 +1,5 @@
 package TicketMarket.demo.Rest;
+
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Files;
@@ -69,109 +70,105 @@ public class EventController {
     }
 
     @RequestMapping(value = "/processEvent", method = RequestMethod.POST)
-public String processEvent(HttpServletRequest http, HttpSession session, Model model) {
-    if (session.getAttribute("loggedInUser") == null)
-        return "redirect:/signin";
+    public String processEvent(HttpServletRequest http, HttpSession session, Model model) {
+        if (session.getAttribute("loggedInUser") == null)
+            return "redirect:/signin";
 
-    // Retrieve event details
-    String name = http.getParameter("event_name");
-    LocalDateTime event_time = LocalDateTime.parse(http.getParameter("event_date"));
-    String eventLoc = http.getParameter("eventLoc");
-    String event_desc = http.getParameter("event_desc");
-    String tag = http.getParameter("tag");
-    String createTicketsToggle = http.getParameter("create-tickets-toggle");
+        // Retrieve event details
+        String name = http.getParameter("event_name");
+        LocalDateTime event_time = LocalDateTime.parse(http.getParameter("event_date"));
+        String eventLoc = http.getParameter("eventLoc");
+        String event_desc = http.getParameter("event_desc");
+        String tag = http.getParameter("tag");
+        String createTicketsToggle = http.getParameter("create-tickets-toggle");
 
-    // Set generated_by_us based on createTicketsToggle
-    boolean generatedByUs = "on".equals(createTicketsToggle);
+        // Set generated_by_us based on createTicketsToggle
+        boolean generatedByUs = "on".equals(createTicketsToggle);
 
-    User temp = (User) session.getAttribute("loggedInUser");
+        User temp = (User) session.getAttribute("loggedInUser");
 
-    // Check if the event already exists
-    if (eventRepository.isEventExist(name)) {
-        model.addAttribute("error", "Event name already exists!");
-        return "createEventForm";
-    }
-
-    Event newEvent = null;
-    int ticketPrice = 1000; 
-    // Retrieve ticket count if "create tickets" is enabled
-    int ticketCount = 0;
-    if (generatedByUs) {
-        try {
-            ticketCount = Integer.parseInt(http.getParameter("ticket_count"));
-            if (ticketCount <= 0 ) { // Assuming a maximum of 1000 tickets
-                model.addAttribute("error", "Ticket count must be a positive integer.");
-                return "createEventForm";
-            }
-            ticketPrice = Integer.parseInt(http.getParameter("ticket_price"));
-            newEvent = new Event(
-        name,
-        event_time,
-        eventLoc,
-        event_desc,
-        temp.getUser_name(),
-        tag,
-        generatedByUs,
-        temp.getUser_name(),
-        ticketPrice, // Default max ticket price
-        ticketCount // Number of tickets
-    );
-
-        } catch (NumberFormatException e) {
-            model.addAttribute("error", "Invalid ticket count. Please enter a valid number.");
+        // Check if the event already exists
+        if (eventRepository.isEventExist(name)) {
+            model.addAttribute("error", "Event name already exists!");
             return "createEventForm";
         }
-    }
-    else{
-        newEvent = new Event(
-        name,
-        event_time,
-        eventLoc,
-        event_desc,
-        "system",
-        tag,
-        generatedByUs,
-        temp.getUser_name(),
-        1000, // Default max ticket price
-        ticketCount // Number of tickets
-    );
-    }
 
-   
-
-    eventRepository.save(newEvent); // Save the event first to generate its ID
-    System.out.println("Event created with ID: " + newEvent.getEvent_id());
-
-    // Create tickets if "create tickets" is enabled
-    if (generatedByUs) {
-        try {
-            if (ticketPrice <= 0) {
-                model.addAttribute("error", "Ticket price must be a positive integer.");
-                return "createEventForm";
-            }
-
-            for (int i = 0; i < ticketCount; i++) {
-                String serialKey = generateSerialKey();
-                Ticket ticket = new Ticket(
-                    newEvent.getEvent_id(),
-                    temp.getUser_id(),
-                    ticketPrice,
-                    "Ticket " + (i + 1),
-                    serialKey,
-                    true, // for_sale
-                    false // is_sold
+        Event newEvent = null;
+        int ticketPrice = 1000;
+        // Retrieve ticket count if "create tickets" is enabled
+        int ticketCount = 0;
+        if (generatedByUs) {
+            try {
+                ticketCount = Integer.parseInt(http.getParameter("ticket_count"));
+                if (ticketCount <= 0) { // Assuming a maximum of 1000 tickets
+                    model.addAttribute("error", "Ticket count must be a positive integer.");
+                    return "createEventForm";
+                }
+                ticketPrice = Integer.parseInt(http.getParameter("ticket_price"));
+                newEvent = new Event(
+                        name,
+                        event_time,
+                        eventLoc,
+                        event_desc,
+                        temp.getUser_name(),
+                        tag,
+                        generatedByUs,
+                        temp.getUser_name(),
+                        ticketPrice, // Default max ticket price
+                        ticketCount // Number of tickets
                 );
-                ticketRepository.save(ticket);
-                System.out.println("Ticket created with Serial Key: " + serialKey);
-            }
-        } catch (NumberFormatException e) {
-            model.addAttribute("error", "Invalid ticket price. Please enter a valid number.");
-            return "createEventForm";
-        }
-    }
 
-    return "eventCreatedSuccess";
-}
+            } catch (NumberFormatException e) {
+                model.addAttribute("error", "Invalid ticket count. Please enter a valid number.");
+                return "createEventForm";
+            }
+        } else {
+            newEvent = new Event(
+                    name,
+                    event_time,
+                    eventLoc,
+                    event_desc,
+                    "system",
+                    tag,
+                    generatedByUs,
+                    temp.getUser_name(),
+                    1000, // Default max ticket price
+                    ticketCount // Number of tickets
+            );
+        }
+
+        eventRepository.save(newEvent); // Save the event first to generate its ID
+        System.out.println("Event created with ID: " + newEvent.getEvent_id());
+
+        // Create tickets if "create tickets" is enabled
+        if (generatedByUs) {
+            try {
+                if (ticketPrice <= 0) {
+                    model.addAttribute("error", "Ticket price must be a positive integer.");
+                    return "createEventForm";
+                }
+
+                for (int i = 0; i < ticketCount; i++) {
+                    String serialKey = generateSerialKey();
+                    Ticket ticket = new Ticket(
+                            newEvent.getEvent_id(),
+                            temp.getUser_id(),
+                            ticketPrice,
+                            "Ticket " + (i + 1),
+                            serialKey,
+                            true, // for_sale
+                            false // is_sold
+                    );
+                    ticketRepository.save(ticket);
+                }
+            } catch (NumberFormatException e) {
+                model.addAttribute("error", "Invalid ticket price. Please enter a valid number.");
+                return "createEventForm";
+            }
+        }
+
+        return "eventCreatedSuccess";
+    }
 
     @RequestMapping("/success_event_created")
     public String success_event_created(HttpSession session) {
@@ -181,43 +178,43 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
     }
 
     @PostMapping("/{eventId}/Tickets/{ticketId}/uploadPdf")
-public String uploadTicketPdf(@PathVariable int eventId,
-                              @PathVariable int ticketId,
-                              @RequestParam("file") MultipartFile file,
-                              HttpSession session,
-                              Model model) {
-    User user = (User) session.getAttribute("loggedInUser");
-    if (user == null) {
-        return "redirect:/signin";
+    public String uploadTicketPdf(@PathVariable int eventId,
+            @PathVariable int ticketId,
+            @RequestParam("file") MultipartFile file,
+            HttpSession session,
+            Model model) {
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) {
+            return "redirect:/signin";
+        }
+
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+        if (ticket.getSeller_id() != user.getUser_id()) {
+            model.addAttribute("error", "You are not authorized to upload a file for this ticket.");
+            return "redirect:/event/" + eventId + "/Tickets";
+        }
+
+        if (file.isEmpty() || !file.getContentType().equals("application/pdf")) {
+            model.addAttribute("error", "Invalid file type. Please upload a PDF.");
+            return "redirect:/event/" + eventId + "/Tickets";
+        }
+
+        try {
+            String uploadDir = "uploads/tickets/";
+            Files.createDirectories(Paths.get(uploadDir));
+            String fileName = "ticket_" + ticketId + "_" + UUID.randomUUID() + ".pdf";
+            Path filePath = Paths.get(uploadDir + fileName);
+            Files.write(filePath, file.getBytes());
+
+            ticketRepository.save(ticket);
+            return "redirect:/event/" + eventId + "/Tickets";
+        } catch (IOException e) {
+            model.addAttribute("error", "File upload failed.");
+            return "redirect:/event/" + eventId + "/Tickets";
+        }
     }
-
-    Ticket ticket = ticketRepository.findById(ticketId)
-            .orElseThrow(() -> new RuntimeException("Ticket not found"));
-
-    if (ticket.getSeller_id() != user.getUser_id()) {
-        model.addAttribute("error", "You are not authorized to upload a file for this ticket.");
-        return "redirect:/event/" + eventId + "/Tickets";
-    }
-
-    if (file.isEmpty() || !file.getContentType().equals("application/pdf")) {
-        model.addAttribute("error", "Invalid file type. Please upload a PDF.");
-        return "redirect:/event/" + eventId + "/Tickets";
-    }
-
-    try {
-        String uploadDir = "uploads/tickets/";
-        Files.createDirectories(Paths.get(uploadDir));
-        String fileName = "ticket_" + ticketId + "_" + UUID.randomUUID() + ".pdf";
-        Path filePath = Paths.get(uploadDir + fileName);
-        Files.write(filePath, file.getBytes());
-
-        ticketRepository.save(ticket);
-        return "redirect:/event/" + eventId + "/Tickets";
-    } catch (IOException e) {
-        model.addAttribute("error", "File upload failed.");
-        return "redirect:/event/" + eventId + "/Tickets";
-    }
-}
 
     @GetMapping("/{id}")
     public String eventPage(@PathVariable int id, HttpSession session, Model model) {
@@ -230,257 +227,271 @@ public String uploadTicketPdf(@PathVariable int eventId,
     }
 
     @GetMapping("/{id}/Tickets")
-public String eventTickets(@PathVariable int id, HttpSession session, Model model) {
-    if (session.getAttribute("loggedInUser") == null)
-        return "redirect:/signin";
+    public String eventTickets(@PathVariable int id, HttpSession session, Model model) {
+        if (session.getAttribute("loggedInUser") == null)
+            return "redirect:/signin";
 
-    Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
-    model.addAttribute("event", event);
+        Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+        model.addAttribute("event", event);
 
-    // Fetch tickets and their sellers
-    List<Ticket> ticketList = ticketRepository.availableTicketsByEventId(id);
-    Map<Integer, String> sellerUsernames = new HashMap<>();
+        // Fetch tickets and their sellers
+        List<Ticket> ticketList = ticketRepository.availableTicketsByEventId(id);
+        Map<Integer, String> sellerUsernames = new HashMap<>();
 
-    for (Ticket ticket : ticketList) {
-        User seller = userRepository.findById(ticket.getSeller_id())
-                .orElseThrow(() -> new RuntimeException("Seller not found for ticket ID " + ticket.getTicket_id()));
-        sellerUsernames.put(ticket.getTicket_id(), seller.getUser_name());
+        for (Ticket ticket : ticketList) {
+            User seller = userRepository.findById(ticket.getSeller_id())
+                    .orElseThrow(() -> new RuntimeException("Seller not found for ticket ID " + ticket.getTicket_id()));
+            sellerUsernames.put(ticket.getTicket_id(), seller.getUser_name());
+        }
+
+        model.addAttribute("ticketsList", ticketList);
+        model.addAttribute("sellerUsernames", sellerUsernames);
+        model.addAttribute("eventAvailableTicketsCount", eventRepository.amountOfAvilableTickets(id));
+        model.addAttribute("eventSoldTicketsCount", eventRepository.amountOfSoldTickets(id));
+        model.addAttribute("eventLookingForTicketsCount", eventRepository.amountOfLookingForTickets(id));
+        model.addAttribute("loggedInUser", session.getAttribute("loggedInUser")); // ✅ Add this line
+
+        return "eventTicketsPage";
     }
 
-    model.addAttribute("ticketsList", ticketList);
-    model.addAttribute("sellerUsernames", sellerUsernames);
-    model.addAttribute("eventAvailableTicketsCount", eventRepository.amountOfAvilableTickets(id));
-    model.addAttribute("eventSoldTicketsCount", eventRepository.amountOfSoldTickets(id));
-    model.addAttribute("eventLookingForTicketsCount", eventRepository.amountOfLookingForTickets(id));
-    model.addAttribute("loggedInUser", session.getAttribute("loggedInUser")); // ✅ Add this line
+    @GetMapping("/{id}/Tickets/newTicket")
+    public String newEventTicket(@PathVariable int id,
+            @RequestParam(value = "ticketId", required = false) Integer ticketId,
+            @RequestParam(value = "price", required = false) Integer price,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "serialKey", required = false) String serialKey,
+            Model model) {
+        Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+        model.addAttribute("event", event);
 
-    return "eventTicketsPage";
-}
+        // Add ticket details to the model if provided
+        if (ticketId != null) {
+            model.addAttribute("ticketId", ticketId);
+            model.addAttribute("price", price);
+            model.addAttribute("description", description);
+            model.addAttribute("serialKey", serialKey);
+        }
 
-
-@GetMapping("/{id}/Tickets/newTicket")
-public String newEventTicket(@PathVariable int id,
-                             @RequestParam(value = "ticketId", required = false) Integer ticketId,
-                             @RequestParam(value = "price", required = false) Integer price,
-                             @RequestParam(value = "description", required = false) String description,
-                             @RequestParam(value = "serialKey", required = false) String serialKey,
-                             Model model) {
-    Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
-    model.addAttribute("event", event);
-
-    // Add ticket details to the model if provided
-    if (ticketId != null) {
-        model.addAttribute("ticketId", ticketId);
-        model.addAttribute("price", price);
-        model.addAttribute("description", description);
-        model.addAttribute("serialKey", serialKey);
-    }
-
-    return "newEventTicketForm";
-}
-
-@RequestMapping(value = "/{id}/Tickets/processNewTicket", method = RequestMethod.POST)
-public String processNewEventTicket(@PathVariable int id,
-                                    @RequestParam(value = "file", required = false) MultipartFile file,
-                                    HttpServletRequest http,
-                                    HttpSession session,
-                                    Model model) {
-    // 1) Authenticate
-    User user = (User) session.getAttribute("loggedInUser");
-    if (user == null) {
-        model.addAttribute("error", "No User Found!");
-        return "redirect:/signin";
-    }
-
-    // 2) Load event
-    Event event = eventRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Event not found"));
-    model.addAttribute("event", event);
-
-    // 3) Check if the user already has a ticket for this event
-    List<Ticket> existingTickets = ticketRepository.findTicketsBySellerIdAndEventId(user.getUser_id(), id);
-    if (existingTickets.size() >= 1) {
-        model.addAttribute("error", "You have already published a ticket for this event.");
         return "newEventTicketForm";
     }
 
-    // 4) Parse & validate price
-    String priceStr = http.getParameter("price");
-    int price;
-    try {
-        price = Integer.parseInt(priceStr);
-        if (price <= 0) {
-            model.addAttribute("error", "Price must be a positive integer.");
+    @RequestMapping(value = "/{id}/Tickets/processNewTicket", method = RequestMethod.POST)
+    public String processNewEventTicket(@PathVariable int id,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            HttpServletRequest http,
+            HttpSession session,
+            Model model) {
+        // 1) Authenticate
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) {
+            model.addAttribute("error", "No User Found!");
+            return "redirect:/signin";
+        }
+
+        // 2) Load event
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+        model.addAttribute("event", event);
+
+        // 3) Check if the user already has a ticket for this event
+        List<Ticket> existingTickets = ticketRepository.findTicketsBySellerIdAndEventId(user.getUser_id(), id);
+        if (existingTickets.size() >= 1) {
+            model.addAttribute("error", "You have already published a ticket for this event and the limit is 1.");
+            model.addAttribute("event", event);
             return "newEventTicketForm";
         }
-    } catch (NumberFormatException e) {
-        model.addAttribute("error", "Invalid price value. Please enter a valid number.");
-        return "newEventTicketForm";
-    }
 
-    // 5) Read description
-    String description = http.getParameter("description");
-
-    // 6) Handle serialKey
-    String serialKey = http.getParameter("serialKey"); // Use the serialKey from the form if provided
-
-    if (file != null && !file.isEmpty()) {
-        // If a file is uploaded, extract the serialKey from the QR code
-        if (!file.getContentType().equals("application/pdf")) {
-            model.addAttribute("error", "You must upload a valid PDF file containing a QR code.");
-            return "newEventTicketForm";
-        }
+        // 4) Parse & validate price
+        String priceStr = http.getParameter("price");
+        int price;
         try {
-            // Write to temp file
-            Path tempFile = Files.createTempFile("ticket_pdf_", ".pdf");
-            file.transferTo(tempFile.toFile());
-
-            // Extract QR payload
-            serialKey = QRUtils.extractQRCodeFromPDF(tempFile);
-            Files.deleteIfExists(tempFile);
-
-            if (serialKey == null) {
-                model.addAttribute("error", "No QR code found in the uploaded PDF.");
+            price = Integer.parseInt(priceStr);
+            if (price < 0) {
+                model.addAttribute("error", "Price must be a positive integer.");
+                model.addAttribute("event", event);
                 return "newEventTicketForm";
             }
-        } catch (IOException e) {
-            model.addAttribute("error", "Failed to process the uploaded PDF file.");
+        } catch (NumberFormatException e) {
+            model.addAttribute("error", "Invalid price value. Please enter a valid number.");
+            model.addAttribute("event", event);
             return "newEventTicketForm";
         }
-    }
 
-    // Check if serialKey already exists
-    if (serialKey == null || ticketRepository.isSerialKeyAlredayExists(serialKey)) {
-        model.addAttribute("error", "Serial key already exists in the database or is invalid.");
-        return "newEventTicketForm";
-    }
+        // 5) Read description
+        String description = http.getParameter("description");
+
+        // 6) Handle serialKey
+        String serialKey = http.getParameter("serialKey"); // Use the serialKey from the form if provided
+
+        if (file != null && !file.isEmpty()) {
+            // If a file is uploaded, extract the serialKey from the QR code
+            if (!file.getContentType().equals("application/pdf")) {
+                model.addAttribute("error", "You must upload a valid PDF file containing a QR code.");
+                model.addAttribute("event", event);
+                return "newEventTicketForm";
+            }
+            try {
+                // Write to temp file
+                Path tempFile = Files.createTempFile("ticket_pdf_", ".pdf");
+                file.transferTo(tempFile.toFile());
+
+                // Extract QR payload
+                serialKey = QRUtils.extractQRCodeFromPDF(tempFile);
+                Files.deleteIfExists(tempFile);
+
+                if (serialKey == null) {
+                    model.addAttribute("error", "No QR code found in the uploaded PDF.");
+                    model.addAttribute("event", event);
+                    return "newEventTicketForm";
+                }
+            } catch (IOException e) {
+                model.addAttribute("error", "Failed to process the uploaded PDF file.");
+                model.addAttribute("event", event);
+                return "newEventTicketForm";
+            }
+        }
+
+        // Check if serialKey already exists ========== maybe i should put in comment
+        if (serialKey == null || ticketRepository.isSerialKeyAlredayExists(serialKey)) {
+            model.addAttribute("error", "ERROR.");
+            model.addAttribute("event", event);
+            return "newEventTicketForm";
+        }
 
         Ticket t = new Ticket(
-            id,
-            user.getUser_id(),
-            price,
-            description,
-            serialKey,
-            true,    // for_sale
-            false   // is_sold
+                id,
+                user.getUser_id(),
+                price,
+                description,
+                serialKey,
+                true, // for_sale
+                false // is_sold
         );
         ticketRepository.save(t);
 
-    return "ticketCreateSuccess";
-}
-@RequestMapping(value = "/{id}/Tickets/processResellTicket", method = RequestMethod.POST)
-public String processResellTicket(@PathVariable int id,
-                                  @RequestParam("ticketId") int ticketId,
-                                  @RequestParam("price") int price,
-                                  @RequestParam("description") String description,
-                                  HttpSession session,
-                                  Model model) {
-    // 1) Authenticate the user
-    User user = (User) session.getAttribute("loggedInUser");
-    if (user == null) {
-        model.addAttribute("error", "No User Found!");
-        return "redirect:/signin";
+        return "ticketCreateSuccess";
     }
 
-    // 2) Load the ticket
-    Ticket ticket = ticketRepository.findById(ticketId)
-            .orElseThrow(() -> new RuntimeException("Ticket not found"));
+    @RequestMapping(value = "/{id}/Tickets/processResellTicket", method = RequestMethod.POST)
+    public String processResellTicket(@PathVariable int id,
+            @RequestParam("ticketId") int ticketId,
+            @RequestParam("price") int price,
+            @RequestParam("description") String description,
+            HttpSession session,
+            Model model) {
+        // 1) Authenticate the user
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) {
+            model.addAttribute("error", "No User Found!");
+            return "redirect:/signin";
+        }
 
-    // 3) Ensure the logged-in user is the owner of the ticket
-    if (ticket.getSeller_id() != user.getUser_id()) {
-        model.addAttribute("error", "You are not authorized to resell this ticket.");
+        // 2) Load the ticket
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+        // 3) Ensure the logged-in user is the owner of the ticket
+        if (ticket.getSeller_id() != user.getUser_id()) {
+            model.addAttribute("error", "You are not authorized to resell this ticket.");
+            return "redirect:/event/" + id + "/Tickets";
+        }
+
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+        model.addAttribute("event", event);
+
+        if (!event.isGenerated_by_us()) {
+            List<Ticket> existingTickets = ticketRepository.findTicketsBySellerIdAndEventId(user.getUser_id(), id);
+            if (existingTickets.size() >= 1) {
+                model.addAttribute("error", "You have already published a ticket for this event and the limit is 1.");
+                model.addAttribute("event", event);
+                return "resellTicketForm";
+            }
+
+        }
+
+        // 4) Update the ticket details
+        ticket.setPrice(price);
+        ticket.setDesc(description);
+        ticket.setFor_sale(true); // Mark the ticket as available for sale
+        ticketRepository.save(ticket);
+
+        // 5) Redirect back to the tickets page
         return "redirect:/event/" + id + "/Tickets";
     }
 
-    // 4) Update the ticket details
-    ticket.setPrice(price);
-    ticket.setDesc(description);
-    ticket.setFor_sale(true); // Mark the ticket as available for sale
-    ticketRepository.save(ticket);
+    @GetMapping("/{id}/generateTickets")
+    public String generateTicketsForm(@PathVariable int id, HttpSession session, Model model) {
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) {
+            return "redirect:/signin"; // Redirect to sign-in page if the user is not logged in
+        }
 
-    // 5) Redirect back to the tickets page
-    return "redirect:/event/" + id + "/Tickets";
-}
+        Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+        if (!event.getEvent_owner().equals(user.getUser_name())) {
+            model.addAttribute("error", "You are not authorized to generate tickets for this event.");
+            return "redirect:/event/" + id;
+        }
 
-
-
-        @GetMapping("/{id}/generateTickets")
-        public String generateTicketsForm(@PathVariable int id, HttpSession session, Model model) {
-            User user = (User) session.getAttribute("loggedInUser");
-            if (user == null) {
-                return "redirect:/signin"; // Redirect to sign-in page if the user is not logged in
-            }
-
-            Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
-            if (!event.getEvent_owner().equals(user.getUser_name())) {
-                model.addAttribute("error", "You are not authorized to generate tickets for this event.");
-                return "redirect:/event/" + id;
-            }
-
-            model.addAttribute("event", event);
-            return "generateTicketsForm"; // Reuse the create event form for ticket generation
-}
-
-@PostMapping("/{id}/generateTickets")
-public String processGenerateTickets(@PathVariable int id, HttpServletRequest http, HttpSession session, Model model) {
-    User user = (User) session.getAttribute("loggedInUser");
-    if (user == null) {
-        return "redirect:/signin"; // Redirect to sign-in page if the user is not logged in
+        model.addAttribute("event", event);
+        return "generateTicketsForm"; // Reuse the create event form for ticket generation
     }
 
-    Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
-    if (!event.getEvent_owner().equals(user.getUser_name())) {
-        model.addAttribute("error", "You are not authorized to generate tickets for this event.");
-        return "redirect:/event/" + id;
-    }
+    @PostMapping("/{id}/generateTickets")
+    public String processGenerateTickets(@PathVariable int id, HttpServletRequest http, HttpSession session,
+            Model model) {
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) {
+            return "redirect:/signin"; // Redirect to sign-in page if the user is not logged in
+        }
 
-    // Check the current number of tickets for the event
-    int currentTicketCount = ticketRepository.ticketsByEventId(id).size();
-    if (currentTicketCount >= 100) {
-        model.addAttribute("error", "Cannot generate more tickets. The total number of tickets for this event has reached the limit of 100.");
-return "redirect:/event/" + id + "/Tickets";    }
+        Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+        if (!event.getEvent_owner().equals(user.getUser_name())) {
+            model.addAttribute("error", "You are not authorized to generate tickets for this event.");
+            return "redirect:/event/" + id;
+        }
 
-    // Retrieve ticket details
-    String ticketCountStr = http.getParameter("ticket_count");
-    String ticketPriceStr = http.getParameter("ticket_price");
+        // Check the current number of tickets for the event
+        int currentTicketCount = ticketRepository.ticketsByEventId(id).size();
+        if (currentTicketCount >= 100) {
+            model.addAttribute("error",
+                    "Cannot generate more tickets. The total number of tickets for this event has reached the limit of 100.");
+            return "redirect:/event/" + id + "/Tickets";
+        }
 
-    try {
-        int ticketCount = Integer.parseInt(ticketCountStr);
-        int ticketPrice = Integer.parseInt(ticketPriceStr);
+        // Retrieve ticket details
+        String ticketCountStr = http.getParameter("ticket_count");
+        String ticketPriceStr = http.getParameter("ticket_price");
 
-        if (ticketCount <= 0 || ticketPrice <= 0) {
-            model.addAttribute("error", "Ticket count and price must be positive integers.");
+        try {
+            int ticketCount = Integer.parseInt(ticketCountStr);
+            int ticketPrice = Integer.parseInt(ticketPriceStr);
+
+            if (ticketCount <= 0 || ticketPrice <= 0) {
+                model.addAttribute("error", "Ticket count and price must be positive integers.");
+                return "generateTicketsForm";
+            }
+
+            if (currentTicketCount + ticketCount > 100) {
+                model.addAttribute("error", "Cannot generate tickets. Adding " + ticketCount
+                        + " tickets would exceed the limit of 100 tickets for this event.");
+                model.addAttribute("event", event); // <-- Make sure this is present!
+                return "generateTicketsForm";
+            }
+            // Generate tickets for the event
+            for (int i = 0; i < ticketCount; i++) {
+                String serialKey = generateSerialKey();
+                Ticket ticket = new Ticket(event.getEvent_id(), user.getUser_id(), ticketPrice,
+                        "Generated Ticket " + (i + 1), serialKey, true, true);
+                ticketRepository.save(ticket);
+                System.out.println("Generated ticket with Serial Key: " + serialKey);
+            }
+        } catch (NumberFormatException e) {
+            model.addAttribute("error", "Invalid ticket count or price. Please enter valid numbers.");
             return "generateTicketsForm";
         }
 
-if (currentTicketCount + ticketCount > 100) {
-    model.addAttribute("error", "Cannot generate tickets. Adding " + ticketCount + " tickets would exceed the limit of 100 tickets for this event.");
-    model.addAttribute("event", event); // <-- Make sure this is present!
-    return "generateTicketsForm";
-}
-        // Generate tickets for the event
-        for (int i = 0; i < ticketCount; i++) {
-            String serialKey = generateSerialKey();
-            Ticket ticket = new Ticket(event.getEvent_id(), user.getUser_id(), ticketPrice,
-                    "Generated Ticket " + (i + 1), serialKey, true, true);
-            ticketRepository.save(ticket);
-            System.out.println("Generated ticket with Serial Key: " + serialKey);
-        }
-    } catch (NumberFormatException e) {
-        model.addAttribute("error", "Invalid ticket count or price. Please enter valid numbers.");
-        return "generateTicketsForm";
-    }
-
-    return "redirect:/event/" + id; // Redirect back to the event page
-}
-    
-    public boolean generatedByUsTicket(String serialKey) {
-        return ticketRepository.generatedByUsTicket(serialKey);
-    }
-
-    
-    public boolean verifyTicket(int eventId , String serialKey) {
-        return ticketRepository.verifyTicket(eventId , serialKey);
+        return "redirect:/event/" + id + "/Tickets"; // Redirect back to the event page
     }
 
     @GetMapping("/{eventId}/Tickets/{TicketId}")
@@ -541,50 +552,9 @@ if (currentTicketCount + ticketCount > 100) {
             processBuyingTicket(buyer, seller, ticket, event);
         }
 
-
         model.addAttribute("ticket", ticket);
         model.addAttribute("event", event);
         return "successBuyingTicketPage";
-    }
-
-    public void processBuyingTicket(User buyer, User seller, Ticket ticket, Event event) {
-        Transaction transaction = new Transaction(ticket.getTicket_id(), buyer.getUser_id(), seller.getUser_id(),
-                LocalDateTime.now(), ticket.getPrice());
-        transactionRepository.save(transaction);
-
-        // balance handeling
-        buyer.setBalance(buyer.getBalance() - ticket.getPrice());
-        seller.setBalance(seller.getBalance() + ticket.getPrice());
-
-        // ticket handeling
-        ticket.setFor_sale(false);
-        ticket.set_is_sold(true);
-
-        ticket.setSeller_id(buyer.getUser_id());
-
-        userRepository.save(buyer);
-        userRepository.save(seller);
-
-    }
-
-    public void processBuyingOurTicket(User buyer, User seller, Ticket ticket, Event event) {
-        Transaction transaction = new Transaction(ticket.getTicket_id(), buyer.getUser_id(), seller.getUser_id(),
-                LocalDateTime.now(), ticket.getPrice());
-        transactionRepository.save(transaction);
-
-        // balance handeling
-        buyer.setBalance(buyer.getBalance() - ticket.getPrice());
-        seller.setBalance(seller.getBalance() + ticket.getPrice());
-
-        // ticket handeling
-        ticket.setFor_sale(false);
-
-        ticket.setSeller_id(buyer.getUser_id());
-        ticket.setSerialKey(generateSerialKey());
-
-        userRepository.save(buyer);
-        userRepository.save(seller);
-
     }
 
     @GetMapping("{eventId}/Tickets/{TicketID}/modify")
@@ -632,6 +602,17 @@ if (currentTicketCount + ticketCount > 100) {
         if ("modify".equals(action)) {
             // Modify the ticket
             int price = Integer.parseInt(request.getParameter("price"));
+            Event event = eventRepository.findById(eventId)
+                    .orElseThrow(() -> new RuntimeException("Event not found"));
+            // only the owner of the user ius allowed to upper the price of the tickets
+            if (event.isGenerated_by_us() & user.getUser_name() != event.getEvent_owner()) {
+                if (price < 0 || price > event.getTicket_max_price()) {
+                    model.addAttribute("error", "Price must be a positive integer or lower than its original value.");
+                    model.addAttribute("event", event);
+                    model.addAttribute("ticket", ticket);
+                    return "modifyTicket";
+                }
+            }
             String description = request.getParameter("description");
 
             ticket.setPrice(price);
@@ -644,61 +625,106 @@ if (currentTicketCount + ticketCount > 100) {
         throw new IllegalArgumentException("Invalid action: " + action);
     }
 
-   @GetMapping("/myTickets")
-public String myTickets(HttpSession session, Model model) {
-    User user = (User) session.getAttribute("loggedInUser");
-    if (user == null) {
-        return "redirect:/signin";
+    @GetMapping("/myTickets")
+    public String myTickets(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) {
+            return "redirect:/signin";
+        }
+
+        List<Ticket> myTickets = ticketRepository.findBySellerId(user.getUser_id());
+        Map<Integer, String> ticketEventDetails = new HashMap<>();
+        for (Ticket ticket : myTickets) {
+            Event event = eventRepository.findById(ticket.getEvent_id())
+                    .orElseThrow(() -> new RuntimeException("Event not found"));
+            ticketEventDetails.put(
+                    ticket.getTicket_id(),
+                    event.getEvent_name() + " (Date: " + event.getEvent_date() + ")");
+        }
+
+        // ← Add the logged-in user so Thymeleaf can resolve ${loggedInUser}
+        model.addAttribute("loggedInUser", user);
+        model.addAttribute("myTickets", myTickets);
+        model.addAttribute("ticketEventDetails", ticketEventDetails);
+        return "myTicketsPage";
     }
 
-    List<Ticket> myTickets = ticketRepository.findBySellerId(user.getUser_id());
-    Map<Integer,String> ticketEventDetails = new HashMap<>();
-    for (Ticket ticket : myTickets) {
-        Event event = eventRepository.findById(ticket.getEvent_id())
-            .orElseThrow(() -> new RuntimeException("Event not found"));
-        ticketEventDetails.put(
-            ticket.getTicket_id(),
-            event.getEvent_name() + " (Date: " + event.getEvent_date() + ")"
-        );
+    @GetMapping("/{eventId}/Tickets/{ticketId}/resell")
+    public String resellTicket(@PathVariable int eventId,
+            @PathVariable int ticketId,
+            Model model,
+            HttpSession session) {
+        // Authenticate the user
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) {
+            return "redirect:/signin";
+        }
+
+        // Load the ticket
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+        // Ensure the logged-in user is the owner of the ticket
+        if (ticket.getSeller_id() != user.getUser_id()) {
+            model.addAttribute("error", "You are not authorized to resell this ticket.");
+            return "redirect:/event/" + eventId + "/Tickets";
+        }
+
+        // Load the event
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+
+        // Pass ticket and event details to the model
+        model.addAttribute("event", event);
+        model.addAttribute("ticket", ticket);
+
+        return "resellTicketForm"; // Redirect to the resell ticket form
     }
 
-    // ← Add the logged-in user so Thymeleaf can resolve ${loggedInUser}
-    model.addAttribute("loggedInUser", user);
-    model.addAttribute("myTickets", myTickets);
-    model.addAttribute("ticketEventDetails", ticketEventDetails);
-    return "myTicketsPage";
-}
-
-@GetMapping("/{eventId}/Tickets/{ticketId}/resell")
-public String resellTicket(@PathVariable int eventId,
-                           @PathVariable int ticketId,
-                           Model model,
-                           HttpSession session) {
-    // Authenticate the user
-    User user = (User) session.getAttribute("loggedInUser");
-    if (user == null) {
-        return "redirect:/signin";
+    public boolean generatedByUsTicket(String serialKey) {
+        return ticketRepository.generatedByUsTicket(serialKey);
     }
 
-    // Load the ticket
-    Ticket ticket = ticketRepository.findById(ticketId)
-            .orElseThrow(() -> new RuntimeException("Ticket not found"));
-
-    // Ensure the logged-in user is the owner of the ticket
-    if (ticket.getSeller_id() != user.getUser_id()) {
-        model.addAttribute("error", "You are not authorized to resell this ticket.");
-        return "redirect:/event/" + eventId + "/Tickets";
+    public boolean verifyTicket(int eventId, String serialKey) {
+        return ticketRepository.verifyTicket(eventId, serialKey);
     }
 
-    // Load the event
-    Event event = eventRepository.findById(eventId)
-            .orElseThrow(() -> new RuntimeException("Event not found"));
+    public void processBuyingTicket(User buyer, User seller, Ticket ticket, Event event) {
+        Transaction transaction = new Transaction(ticket.getTicket_id(), buyer.getUser_id(), seller.getUser_id(),
+                LocalDateTime.now(), ticket.getPrice());
+        transactionRepository.save(transaction);
 
-    // Pass ticket and event details to the model
-    model.addAttribute("event", event);
-    model.addAttribute("ticket", ticket);
+        // balance handeling
+        buyer.setBalance(buyer.getBalance() - ticket.getPrice());
+        seller.setBalance(seller.getBalance() + ticket.getPrice());
 
-    return "resellTicketForm"; // Redirect to the resell ticket form
-}
+        // ticket handeling
+        ticket.setFor_sale(false);
+        ticket.set_is_sold(true);
 
+        ticket.setSeller_id(buyer.getUser_id());
+
+        userRepository.save(buyer);
+        userRepository.save(seller);
+
+    }
+
+    public void processBuyingOurTicket(User buyer, User seller, Ticket ticket, Event event) {
+        Transaction transaction = new Transaction(ticket.getTicket_id(), buyer.getUser_id(), seller.getUser_id(),
+                LocalDateTime.now(), ticket.getPrice());
+        transactionRepository.save(transaction);
+
+        // balance handeling
+        buyer.setBalance(buyer.getBalance() - ticket.getPrice());
+        seller.setBalance(seller.getBalance() + ticket.getPrice());
+
+        // ticket handeling
+        ticket.setFor_sale(false);
+
+        ticket.setSeller_id(buyer.getUser_id());
+        ticket.setSerialKey(generateSerialKey());
+
+        userRepository.save(buyer);
+        userRepository.save(seller);
+    }
 }
