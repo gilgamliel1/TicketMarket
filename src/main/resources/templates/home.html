@@ -195,18 +195,30 @@
 <body>
 <!-- Header Section -->
 <div class="header">
-    <div class="welcome">
-        <h1>Welcome, <span th:text="${user.first_name}">User</span>!</h1>
-        <!-- <p>Your location: <span id="user-location">Fetching location...</span></p> -->
-        <p>Your balance: <span th:text="${user.balance}">Loading...</span></p>
-        <form th:action="@{/event/myTickets}" method="get">
-            <button type="submit" style="padding: 10px 15px; font-size: 14px; background-color: #007bff; color: white; border: 2px solid white;
-        border-radius: 5px; cursor: pointer;">
+<div class="welcome">
+    <h1>Welcome, <span th:text="${user.first_name}">User</span>!</h1>
+    <p>
+        Your balance: <span th:text="${user.balance}">Loading...</span>
+    </p>
+    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <form th:action="@{/event/myTickets}" method="get" style="margin: 0;">
+            <button type="submit" style="padding: 10px 15px; font-size: 14px; background-color: #007bff; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer;">
                 My Tickets
             </button>
         </form>
+        <form th:action="@{/deposit}" method="get" style="margin: 0;">
+            <button type="submit" style="padding: 10px 15px; font-size: 14px; background-color: #28a745; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer;">
+                Deposit
+            </button>
+        </form>
+        <form th:action="@{/withdraw}" method="get" style="margin: 0;">
+            <button type="submit" style="padding: 10px 15px; font-size: 14px; background-color: #dc3545; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer;">
+                Withdraw
+            </button>
+        </form>
+
     </div>
-    <div style="display: flex; align-items: center; gap: 20px;">
+</div>    <div style="display: flex; align-items: center; gap: 20px;">
         <img src="images/WhiteTicketMarketLogo.png" alt="Logo">
         <form th:action="@{/logout}" method="get">
             <button type="submit" style="padding: 10px 15px; font-size: 14px; background-color: #007bff; color: white; border: 2px solid white;
