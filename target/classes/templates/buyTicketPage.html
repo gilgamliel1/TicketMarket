@@ -109,6 +109,12 @@
         <p><strong>Ticket Description:</strong> <span th:text="${ticket.desc}"></span></p>
     </div>
 
+    <div class="details" th:if="${!event.generated_by_us}">
+        <p style="color: #d9534f; font-weight: bold;">
+            Note: Once you buy this ticket, you <u>cannot</u> resell it.
+        </p>
+    </div>
+
     <div class="btn-container">
 
         <!-- Buy Ticket Button -->

@@ -159,7 +159,7 @@ public class EventController {
                             "Ticket " + (i + 1),
                             serialKey,
                             true, // for_sale
-                            false // is_sold
+                            true // is_sold
                     );
                     ticketRepository.save(ticket);
                 }
@@ -298,8 +298,7 @@ public class EventController {
         // 3) Check if the user already has a ticket for this event
         List<Ticket> existingTickets = ticketRepository.findTicketsBySellerIdAndEventId(user.getUser_id(), id);
         if (existingTickets.size() >= 1) {
-            model.addAttribute("error", "You have already published a ticket for this event and the limit is 1.");
-            model.addAttribute("event", event);
+        model.addAttribute("error", "This ticket has already been published. Only one publication is allowed per ticket.");            model.addAttribute("event", event);
             return "newEventTicketForm";
         }
 
@@ -405,7 +404,7 @@ public class EventController {
         if (!event.isGenerated_by_us()) {
             List<Ticket> existingTickets = ticketRepository.findTicketsBySellerIdAndEventId(user.getUser_id(), id);
             if (existingTickets.size() >= 1) {
-                model.addAttribute("error", "You have already published a ticket for this event and the limit is 1.");
+        model.addAttribute("error", "This ticket has already been published. Only one publication is allowed per ticket.");            model.addAttribute("event", event);
                 model.addAttribute("event", event);
                 return "resellTicketForm";
             }

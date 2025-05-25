@@ -138,7 +138,7 @@
                 Download Ticket
             </button>
             <!-- Publish Ticket Button -->
-<a th:if="${!ticket.for_sale}" 
+<a th:if="${!ticket.for_sale and ticket.generated_by_us}" 
    th:href="@{|/event/${ticket.event_id}/Tickets/${ticket.ticket_id}/resell|}"
    class="publish-btn">
     Sell Ticket
