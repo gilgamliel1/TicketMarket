@@ -119,19 +119,32 @@
             margin-bottom: 10px;
         }
 
-        .buy-button {
+        .action-button {
             font-size: 14px;
             padding: 10px 20px;
-            background-color: #28a745;
             color: white;
             text-decoration: none;
             border-radius: 5px;
             font-weight: bold;
             cursor: pointer;
             border: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .buy-button {
+            background-color: #28a745;
         }
 
         .buy-button:hover {
+            background-color: #218838;
+        }
+
+        .modify-button {
+            background-color: #28a745;
+        }
+
+        .modify-button:hover {
             background-color: #218838;
         }
 
@@ -269,9 +282,17 @@
             </div>
             <div>
                 <p class="ticket-price" th:text="'₪' + ${ticket.price}">₪0</p>
-                <form th:action="@{'/event/' + ${event.event_id} + '/Tickets/' + ${ticket.ticket_id}}" method="GET">
-                    <button type="submit" class="buy-button">Buy</button>
-                </form>
+                <!-- Show Modify button if the logged-in user is the seller -->
+                <div th:if="${loggedInUser != null and ticket.seller_id == loggedInUser.user_id}">
+                    <a th:href="@{'/event/' + ${event.event_id} + '/Tickets/' + ${ticket.ticket_id} + '/modify'}"
+                       class="action-button modify-button">Modify</a>
+                </div>
+                <!-- Show Buy button if the logged-in user is NOT the seller -->
+                <div th:if="${loggedInUser == null or ticket.seller_id != loggedInUser.user_id}">
+                    <form th:action="@{'/event/' + ${event.event_id} + '/Tickets/' + ${ticket.ticket_id}}" method="GET" style="display:inline;">
+                        <button type="submit" class="action-button buy-button">Buy</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

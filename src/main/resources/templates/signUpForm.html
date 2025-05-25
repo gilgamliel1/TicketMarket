@@ -121,23 +121,6 @@
             text-align: center;
         }
     </style>
-    <script>
-        function togglePassword(fieldId, iconId) {
-            const passwordField = document.getElementById(fieldId);
-            const eyeIcon = document.getElementById(iconId);
-
-            if (passwordField.type === "password") {
-                passwordField.type = "text";
-                eyeIcon.src = "images/eye-closed.png"; // Update to "eye-closed" image
-                eyeIcon.alt = "Hide password";
-            } else {
-                passwordField.type = "password";
-                eyeIcon.src = "images/eye-open.jpg"; // Update to "eye-open" image
-                eyeIcon.alt = "Show password";
-            }
-        }
-
-    </script>
 </head>
 
 <body>
@@ -158,14 +141,12 @@
         <!-- Password field with eye icon -->
         <div class="input-group">
             <input type="password" id="password" name="password" placeholder="Enter password" th:value="${password}" required />
-            <img class="eye-icon" id="eyePassword" src="images/eye-open.png" onclick="togglePassword('password', 'eyePassword')" alt="Toggle password visibility">
         </div>
 
 
         <!-- Verify password field with eye icon -->
         <div class="input-group">
             <input type="password" id="verifypassword" name="verifypassword" placeholder="Verify password" th:value="${verifypassword}" required />
-            <img class="eye-icon" id="eyeVerifyPassword" src="images/eye-open.png" onclick="togglePassword('verifypassword', 'eyeVerifyPassword')" alt="Toggle password visibility">
         </div>
 
         <textarea id="bio" name="Bio" placeholder="Tell us about yourself" th:text="${bio}"></textarea>
