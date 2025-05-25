@@ -99,7 +99,8 @@
             <label for="price">Price</label>
             <input type="number" id="price" name="price" th:value="${ticket.price}" 
                    placeholder="Enter Ticket Price" required 
-                   th:attr="max=${event.ticket_max_price}">
+                   th:attr="max=${event.ticket_max_price}"
+                   min ="0" >
             <p class="info">The resale price cannot exceed ₪<span th:text="${event.ticket_max_price}">1000</span>.</p>
         </div>
         <div class="form-group">
