@@ -283,101 +283,97 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
         return "newEventTicketForm";
     }
 
-    @RequestMapping(value = "/{id}/Tickets/processNewTicket", method = RequestMethod.POST)
-    public String processNewEventTicket(@PathVariable int id,
-            @RequestParam(value = "file", required = false) MultipartFile file,
-            HttpServletRequest http,
-            HttpSession session,
-            Model model) {
-        // 1) Authenticate
-        User user = (User) session.getAttribute("loggedInUser");
-        if (user == null) {
-            model.addAttribute("error", "No User Found!");
-            return "redirect:/signin";
-        }
-
-        // 2) Load event
-        Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
-        model.addAttribute("event", event);
-
-        // 3) Check if the user already has a ticket for this event
-        List<Ticket> existingTickets = ticketRepository.findTicketsBySellerIdAndEventId(user.getUser_id(), id);
-        if (existingTickets.size() >= 1) {
-        model.addAttribute("error", "This ticket has already been published. Only one publication is allowed per ticket.");            model.addAttribute("event", event);
-            return "newEventTicketForm";
-        }
-
-        // 4) Parse & validate price
-        String priceStr = http.getParameter("price");
-        int price;
-        try {
-            price = Integer.parseInt(priceStr);
-            if (price < 0) {
-                model.addAttribute("error", "Price must be a positive integer.");
-                model.addAttribute("event", event);
-                return "newEventTicketForm";
-            }
-        } catch (NumberFormatException e) {
-            model.addAttribute("error", "Invalid price value. Please enter a valid number.");
-            model.addAttribute("event", event);
-            return "newEventTicketForm";
-        }
-
-        // 5) Read description
-        String description = http.getParameter("description");
-
-        // 6) Handle serialKey
-        String serialKey = http.getParameter("serialKey"); // Use the serialKey from the form if provided
-
-        if (file != null && !file.isEmpty()) {
-            // If a file is uploaded, extract the serialKey from the QR code
-            if (!file.getContentType().equals("application/pdf")) {
-                model.addAttribute("error", "You must upload a valid PDF file containing a QR code.");
-                model.addAttribute("event", event);
-                return "newEventTicketForm";
-            }
-            try {
-                // Write to temp file
-                Path tempFile = Files.createTempFile("ticket_pdf_", ".pdf");
-                file.transferTo(tempFile.toFile());
-
-                // Extract QR payload
-                serialKey = QRUtils.extractQRCodeFromPDF(tempFile);
-                Files.deleteIfExists(tempFile);
-
-                if (serialKey == null) {
-                    model.addAttribute("error", "No QR code found in the uploaded PDF.");
-                    model.addAttribute("event", event);
-                    return "newEventTicketForm";
-                }
-            } catch (IOException e) {
-                model.addAttribute("error", "Failed to process the uploaded PDF file.");
-                model.addAttribute("event", event);
-                return "newEventTicketForm";
-            }
-        }
-
-        // Check if serialKey already exists ========== maybe i should put in comment
-        if (serialKey == null || ticketRepository.isSerialKeyAlredayExists(serialKey)) {
-            model.addAttribute("error", "ERROR.");
-            model.addAttribute("event", event);
-            return "newEventTicketForm";
-        }
-
-        Ticket t = new Ticket(
-                id,
-                user.getUser_id(),
-                price,
-                description,
-                serialKey,
-                true, // for_sale
-                false // is_sold
-        );
-        ticketRepository.save(t);
-
-        return "ticketCreateSuccess";
+@RequestMapping(value = "/{id}/Tickets/processNewTicket", method = RequestMethod.POST)
+public String processNewEventTicket(
+        @PathVariable int id,
+        @RequestParam(value = "file", required = false) MultipartFile file,
+        HttpServletRequest http,
+        HttpSession session,
+        Model model
+) {
+    // 1) Authenticate
+    User user = (User) session.getAttribute("loggedInUser");
+    if (user == null) {
+        return "redirect:/signin";
     }
+
+    // 2) Load event
+    Event event = eventRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Event not found"));
+    model.addAttribute("event", event);
+
+    // 3) Prevent duplicate publication
+    if (!ticketRepository.findTicketsBySellerIdAndEventId(user.getUser_id(), id).isEmpty()) {
+        model.addAttribute("error", "You’ve already published a ticket for this event.");
+        return "newEventTicketForm";
+    }
+
+    // 4) Parse & validate price
+    int price;
+    try {
+        price = Integer.parseInt(http.getParameter("price"));
+        if (price < 0) throw new NumberFormatException();
+    } catch (NumberFormatException e) {
+        model.addAttribute("error", "Please enter a valid positive price.");
+        return "newEventTicketForm";
+    }
+
+    // 5) Read description
+    String description = http.getParameter("description");
+
+    // 6) Handle serialKey – either from text field or from uploaded file
+    String serialKey = http.getParameter("serialKey");
+
+    if (file != null && !file.isEmpty()) {
+        String contentType = file.getContentType();
+        try {
+            // write to a temp file
+            Path tmp = Files.createTempFile("ticket_upload_", contentType.startsWith("image/") ? ".img" : ".pdf");
+            file.transferTo(tmp.toFile());
+
+            if ("application/pdf".equals(contentType)) {
+                serialKey = QRUtils.extractQRCodeFromPDF(tmp);
+            }
+            else if (contentType != null && contentType.startsWith("image/")) {
+                serialKey = QRUtils.extractQRCodeFromImage(tmp);
+            }
+            else {
+                model.addAttribute("error", "Only PDF or image (JPG/PNG) files may be uploaded.");
+                return "newEventTicketForm";
+            }
+
+            Files.deleteIfExists(tmp);
+
+            if (serialKey == null) {
+                model.addAttribute("error", "No QR code found in the uploaded file.");
+                return "newEventTicketForm";
+            }
+        } catch (IOException ex) {
+            model.addAttribute("error", "Failed to process the uploaded file.");
+            return "newEventTicketForm";
+        }
+    }
+
+    // 7) Check serialKey uniqueness
+    if (serialKey == null || ticketRepository.isSerialKeyAlredayExists(serialKey)) {
+        model.addAttribute("error", "That QR code has already been used.");
+        return "newEventTicketForm";
+    }
+
+    // 8) Save
+    Ticket ticket = new Ticket(
+        id,
+        user.getUser_id(),
+        price,
+        description,
+        serialKey,
+        true,   // for_sale
+        false   // is_sold
+    );
+    ticketRepository.save(ticket);
+
+    return "ticketCreateSuccess";
+}
 
     @RequestMapping(value = "/{id}/Tickets/processResellTicket", method = RequestMethod.POST)
     public String processResellTicket(@PathVariable int id,

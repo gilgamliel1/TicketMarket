@@ -41,6 +41,17 @@ public class QRUtils {
         // no QR found
         return null;
     }
+    public static String extractQRCodeFromImage(Path imagePath) throws IOException {
+    BufferedImage img = ImageIO.read(imagePath.toFile());
+    LuminanceSource source = new BufferedImageLuminanceSource(img);
+    BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+    try {
+        return new MultiFormatReader().decode(bitmap).getText();
+    } catch (NotFoundException e) {
+        return null;
+    }
+}
+
 
     /** 
      * Uses ZXing to decode a single BufferedImage.
