@@ -74,6 +74,11 @@ public class HomePageController {
             model.addAttribute("user", user);
             return "deposit";
         }
+        if (user.getBalance() + amount > 100_000) {
+            model.addAttribute("error", "Balance cannot exceed 100,000.");
+            model.addAttribute("user", user);
+            return "deposit";
+        }
         user.setBalance(user.getBalance() + amount);
         model.addAttribute("user", user);
         session.setAttribute("loggedInUser", user);
