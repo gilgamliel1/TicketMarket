@@ -218,9 +218,11 @@
         </form>
 
     </div>
-</div>    <div style="display: flex; align-items: center; gap: 20px;">
-        <img src="images/WhiteTicketMarketLogo.png" alt="Logo">
-        <form th:action="@{/logout}" method="get">
+</div>    
+<div style="display: flex; align-items: center; gap: 20px;">
+<a th:href="@{/home}">
+    <img src="images/WhiteTicketMarketLogo.png" alt="Logo">
+</a>        <form th:action="@{/logout}" method="get">
             <button type="submit" style="padding: 10px 15px; font-size: 14px; background-color: #007bff; color: white; border: 2px solid white;
         border-radius: 5px; cursor: pointer;">
                 Sign Out
