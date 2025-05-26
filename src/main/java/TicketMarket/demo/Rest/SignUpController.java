@@ -31,7 +31,7 @@ public class SignUpController {
         String email = http.getParameter("email");
         String password = http.getParameter("password");
         String verifypassword = http.getParameter("verifypassword");
-        //        String bio = http.getParameter("Bio");
+               String bio = http.getParameter("Bio");
         model.addAttribute("username", userName);
         model.addAttribute("firstName", firstName);
         model.addAttribute("lastName", lastName);
@@ -39,7 +39,7 @@ public class SignUpController {
         model.addAttribute("email", email);
         model.addAttribute("password", password);
         model.addAttribute("verifypassword", verifypassword);
-        //        model.addAttribute("bio", bio);
+               model.addAttribute("bio", bio);
 
         if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.com$")) {
         model.addAttribute("error", "Invalid email format. Please enter a valid email like user@example.com");
