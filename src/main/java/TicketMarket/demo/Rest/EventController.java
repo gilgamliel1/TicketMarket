@@ -256,7 +256,6 @@ public String processEvent(HttpServletRequest http, HttpSession session, Model m
         model.addAttribute("sellerUsernames", sellerUsernames);
         model.addAttribute("eventAvailableTicketsCount", eventRepository.amountOfAvilableTickets(id));
         model.addAttribute("eventSoldTicketsCount", eventRepository.amountOfSoldTickets(id));
-        model.addAttribute("eventLookingForTicketsCount", eventRepository.amountOfLookingForTickets(id));
         model.addAttribute("loggedInUser", session.getAttribute("loggedInUser")); // ✅ Add this line
 
         return "eventTicketsPage";
@@ -598,20 +597,20 @@ public String processGenerateTickets(
             return "redirect:/event/" + eventId + "/Tickets";
         }
         String action = request.getParameter("action");
-        if ("delete".equals(action)) {
+        if ("not_for_sale".equals(action)) {
             ticket.setFor_sale(false);
             ticketRepository.save(ticket);
-
             return "redirect:/event/" + eventId + "/Tickets";
         }
-
+        if ("delete".equals(action)) {
+            ticketRepository.delete(ticket);
+            return "redirect:/event/" + eventId + "/Tickets";
+        }
         if ("modify".equals(action)) {
-            // Modify the ticket
             int price = Integer.parseInt(request.getParameter("price"));
             Event event = eventRepository.findById(eventId)
                     .orElseThrow(() -> new RuntimeException("Event not found"));
-            // only the owner of the user ius allowed to upper the price of the tickets
-            if (event.isGenerated_by_us() & user.getUser_name() != event.getEvent_owner()) {
+            if (event.isGenerated_by_us() & !user.getUser_name().equals(event.getEvent_owner())) {
                 if (price < 0 || price > event.getTicket_max_price()) {
                     model.addAttribute("error", "Price must be a positive integer or lower than its original value.");
                     model.addAttribute("event", event);
@@ -620,14 +619,11 @@ public String processGenerateTickets(
                 }
             }
             String description = request.getParameter("description");
-
             ticket.setPrice(price);
             ticket.setDesc(description);
             ticketRepository.save(ticket);
-
             return "redirect:/event/" + eventId + "/Tickets";
         }
-
         throw new IllegalArgumentException("Invalid action: " + action);
     }
 
