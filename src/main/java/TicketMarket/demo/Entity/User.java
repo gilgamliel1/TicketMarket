@@ -10,7 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name ="users",uniqueConstraints = @UniqueConstraint(columnNames ={ "user_id","user_name" }))
+@Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = { "user_name" }))
 public class User {
     @Id
     @Column(name="user_id")
@@ -23,13 +23,11 @@ public class User {
     @Column(name = "user_last_name")
     private String user_last_name ="NoName";
     @Column(name = "user_id_number")
-    private int user_id_number ;
+    private String user_id_number ; // Changed to String
     @Column(name = "email")
     private String email="NoName" ;
     @Column(name = "password_hash")
     private String password_hash="NoName" ;
-    @Column(name = "profile_picture_url" , length = 255)
-    private String profile_picture_url ="NoName";
     @Column(name = "bio" , length = 100)
     private String bio ="NoName";
     @CreationTimestamp
@@ -38,15 +36,14 @@ public class User {
     @Column(name = "wallet_balance")
     private int balance ;
 
-    public User(String user_name_ , String first_name_ , String last_name_ , int user_id_number_ , String email_ , String password_hash_ , String profile_picture_url_
-    , String bio_){
+    // Updated constructor (removed profile_picture_url, user_id_number is String)
+    public User(String user_name_ , String first_name_ , String last_name_ , String user_id_number_ , String email_ , String password_hash_, String bio_){
         this.user_name = user_name_;
         this.user_first_name = first_name_;
         this.user_last_name = last_name_;
         this.user_id_number = user_id_number_;
         this.email = email_;
         this.password_hash = password_hash_;
-        this.profile_picture_url = profile_picture_url_;
         this.bio = bio_;
         this.balance = 0 ;
     }
@@ -54,10 +51,9 @@ public class User {
         this.user_name = null ;
         this.user_first_name = null ;
         this.user_last_name = null ;
-        this.user_id_number = -1;
+        this.user_id_number = null;
         this.email = null ;
         this.password_hash = null ;
-        this.profile_picture_url = null;
         this.bio = null ;
         this.balance = -1 ;
     }
@@ -93,11 +89,11 @@ public class User {
         this.user_last_name = last_name;
     }
 
-    public int getUser_id_number() {
+    public String getUser_id_number() {
         return user_id_number;
     }
 
-    public void setUser_id_number(int user_id_number) {
+    public void setUser_id_number(String user_id_number) {
         this.user_id_number = user_id_number;
     }
 
@@ -115,14 +111,6 @@ public class User {
 
     public void setPassword_hash(String password_hash) {
         this.password_hash = password_hash;
-    }
-
-    public String getProfile_picture_url() {
-        return profile_picture_url;
-    }
-
-    public void setProfile_picture_url(String profile_picture_url) {
-        this.profile_picture_url = profile_picture_url;
     }
 
     public String getBio() {
@@ -158,7 +146,6 @@ public class User {
                 ", user_id_number=" + user_id_number +
                 ", email=" + email +
                 ", password_hash=" + password_hash +
-                ", profile_picture_url=" + profile_picture_url +
                 ", bio=" + bio +
                 ", createdAt=" + createdAt +
                 ", balance=" + balance +

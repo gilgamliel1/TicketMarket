@@ -3,7 +3,6 @@ package TicketMarket.demo.Rest;
 import TicketMarket.demo.DAO.UserRepository;
 import TicketMarket.demo.Entity.User;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
 public class SignUpController {
-    private static UserRepository repository ;
-    @Autowired
+    private final UserRepository repository ;
+
     public SignUpController(UserRepository repository) {
         this.repository = repository;
     }
@@ -42,21 +41,15 @@ public class SignUpController {
         model.addAttribute("bio", bio);
 
         if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.com$")) {
-        model.addAttribute("error", "Invalid email format. Please enter a valid email like user@example.com");
-        return "signUpForm";
-    }
+            model.addAttribute("error", "Invalid email format. Please enter a valid email like user@example.com");
+            return "signUpForm";
+        }
 
         if (repository.isUsernameExist(userName)){
             model.addAttribute("error", "Username already exists. Please choose another.");
             return "signUpForm";
         }
-        int userIdNumber;
-        try {
-            userIdNumber = Integer.parseInt(userIdNumberStr);
-        } catch (NumberFormatException e) {
-            model.addAttribute("error", "Invalid user ID number. Please enter a valid number.");
-            return "signUpForm";
-        }
+
         if (isIsraeliIdNumber(userIdNumberStr) == false){
             model.addAttribute("error", "Invalid Israeli ID number. Please enter a valid number.");
             return "signUpForm";
@@ -73,28 +66,29 @@ public class SignUpController {
             model.addAttribute("error" ,"email is already in use" );
             return "signUpForm";
         }
-        repository.save(new User(userName , firstName , lastName , userIdNumber , email , password , "none" , "none"));
+        // Updated constructor: removed profile_picture_url, user_id_number is String, bio is last argument
+        repository.save(new User(userName, firstName, lastName, userIdNumberStr, email, password, bio));
         return "signUpSuccess";
     }
+
     @RequestMapping("/signupSuccess")
     public String signupSuccess(){
         return "signUpSuccess";
     }
 
     public static boolean isIsraeliIdNumber(String id) {
-    id = id.trim();
-    if (id.length() > 9 || !id.matches("\\d+")) return false;
-    // Pad with leading zeros if needed
-    while (id.length() < 9) {
-        id = "0" + id;
+        id = id.trim();
+        if (id.length() > 9 || !id.matches("\\d+")) return false;
+        // Pad with leading zeros if needed
+        while (id.length() < 9) {
+            id = "0" + id;
+        }
+        int sum = 0;
+        for (int i = 0; i < 9; i++) {
+            int digit = Character.getNumericValue(id.charAt(i));
+            int step = digit * ((i % 2) + 1);
+            sum += (step > 9) ? step - 9 : step;
+        }
+        return sum % 10 == 0;
     }
-    int sum = 0;
-    for (int i = 0; i < 9; i++) {
-        int digit = Character.getNumericValue(id.charAt(i));
-        int step = digit * ((i % 2) + 1);
-        sum += (step > 9) ? step - 9 : step;
-    }
-    return sum % 10 == 0;
-}
-
 }
