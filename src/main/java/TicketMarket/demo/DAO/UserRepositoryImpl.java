@@ -40,10 +40,10 @@ public class UserRepositoryImpl implements UserCustomRepository{
         return qur.getResultList().size() >= 1 ;
     }
     @Override
-    public boolean isUserIdExist (int id){
-        TypedQuery<User> qur = entityManager.createQuery("FROM User WHERE user_id_number=:id", User.class);
-        qur.setParameter("id" , id);
-        return qur.getResultList().size() >= 1 ;
+    public boolean isUserIdExist(String id) {
+        TypedQuery<User> qur = entityManager.createQuery("FROM User WHERE user_id_number = :id", User.class);
+        qur.setParameter("id", id);
+        return qur.getResultList().size() >= 1;
     }
 
     @Override

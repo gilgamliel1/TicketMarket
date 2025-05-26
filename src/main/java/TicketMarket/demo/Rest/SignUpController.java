@@ -31,7 +31,7 @@ public class SignUpController {
         String email = http.getParameter("email");
         String password = http.getParameter("password");
         String verifypassword = http.getParameter("verifypassword");
-               String bio = http.getParameter("Bio");
+        String bio = http.getParameter("bio");
         model.addAttribute("username", userName);
         model.addAttribute("firstName", firstName);
         model.addAttribute("lastName", lastName);
@@ -39,7 +39,7 @@ public class SignUpController {
         model.addAttribute("email", email);
         model.addAttribute("password", password);
         model.addAttribute("verifypassword", verifypassword);
-               model.addAttribute("bio", bio);
+        model.addAttribute("bio", bio);
 
         if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.com$")) {
         model.addAttribute("error", "Invalid email format. Please enter a valid email like user@example.com");
@@ -61,7 +61,7 @@ public class SignUpController {
             model.addAttribute("error", "Invalid Israeli ID number. Please enter a valid number.");
             return "signUpForm";
         }
-        if (repository.isUserIdExist(userIdNumber)){
+        if (repository.isUserIdExist(userIdNumberStr)){
             model.addAttribute("error", "ID already exists. Please choose another.");
             return "signUpForm";
         }
@@ -70,7 +70,8 @@ public class SignUpController {
             return "signUpForm";
         }
         if (repository.isEmailExist(email)){
-            model.addAttribute("error" ,"email is alreday in use" );
+            model.addAttribute("error" ,"email is already in use" );
+            return "signUpForm";
         }
         repository.save(new User(userName , firstName , lastName , userIdNumber , email , password , "none" , "none"));
         return "signUpSuccess";
