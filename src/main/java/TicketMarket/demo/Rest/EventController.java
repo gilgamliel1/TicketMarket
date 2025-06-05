@@ -547,6 +547,10 @@ public String processGenerateTickets(
             return "redirect:/signin";
         }
 
+        if (ticketRepository.isTicketExists(TicketId)) {
+            model.addAttribute("error", "Ticket does not exist.");
+            return "redirect:/event/" + eventId + "/Tickets";
+        }
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
         Ticket ticket = ticketRepository.findById(TicketId)
@@ -570,6 +574,7 @@ public String processGenerateTickets(
             return "buyTicketPage";
         }
 
+        
         if (!ticket.isFor_sale()) {
             model.addAttribute("error", "This ticket is not for sale.");
             model.addAttribute("ticket", ticket);
@@ -730,7 +735,7 @@ public String myTickets(HttpSession session, Model model) {
 
     public void processBuyingTicket(User buyer, User seller, Ticket ticket, Event event) {
         Transaction transaction = new Transaction(ticket.getTicket_id(), buyer.getUser_id(), seller.getUser_id(),
-                LocalDateTime.now(), ticket.getPrice());
+        LocalDateTime.now(), ticket.getPrice());
         transactionRepository.save(transaction);
 
         // balance handeling

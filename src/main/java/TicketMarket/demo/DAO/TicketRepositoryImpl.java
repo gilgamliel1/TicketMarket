@@ -3,15 +3,12 @@ package TicketMarket.demo.DAO;
 import TicketMarket.demo.Entity.Ticket;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
-import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 @Repository
 public class TicketRepositoryImpl implements TicketCustomRepository{
     private EntityManager entityManager ;
-    @Autowired
     public TicketRepositoryImpl(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
@@ -101,6 +98,13 @@ public List<Ticket> findTicketsBySellerIdAndEventId(int seller_id, int event_id)
 
     return query.getSingleResult(); // Returns the ticket with the matching serialKey
 }
-
-
+@Override
+public boolean isTicketExists(int ticketId) {
+    TypedQuery<Long> query = entityManager.createQuery(
+        "SELECT COUNT(t) FROM Ticket t WHERE t.ticket_id = :ticketId", Long.class
+    );
+    query.setParameter("ticketId", ticketId);
+    Long count = query.getSingleResult();
+    return count > 0; // Returns true if the ticket exists, false otherwise
+}
 }
