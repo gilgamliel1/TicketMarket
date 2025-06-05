@@ -634,30 +634,38 @@ public String processGenerateTickets(
         throw new IllegalArgumentException("Invalid action: " + action);
     }
 
-    @GetMapping("/myTickets")
-    public String myTickets(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loggedInUser");
-        if (user == null) {
-            return "redirect:/signin";
-        }
-
-        List<Ticket> myTickets = ticketRepository.findBySellerId(user.getUser_id());
-        Map<Integer, String> ticketEventDetails = new HashMap<>();
-        for (Ticket ticket : myTickets) {
-            Event event = eventRepository.findById(ticket.getEvent_id())
-                    .orElseThrow(() -> new RuntimeException("Event not found"));
-            ticketEventDetails.put(
-                    ticket.getTicket_id(),
-                    event.getEvent_name() + " (Date: " + event.getEvent_date() + ")");
-        }
-
-        // ← Add the logged-in user so Thymeleaf can resolve ${loggedInUser}
-        model.addAttribute("loggedInUser", user);
-        model.addAttribute("myTickets", myTickets);
-        model.addAttribute("ticketEventDetails", ticketEventDetails);
-        return "myTicketsPage";
+@GetMapping("/myTickets")
+public String myTickets(HttpSession session, Model model) {
+    User user = (User) session.getAttribute("loggedInUser");
+    if (user == null) {
+        return "redirect:/signin";
     }
 
+    // Fetch all tickets for the seller
+    List<Ticket> myTickets = ticketRepository.findBySellerId(user.getUser_id());
+    Map<Integer, String> ticketEventDetails = new HashMap<>();
+
+    // Filter tickets for events whose date has not passed
+    myTickets.removeIf(ticket -> {
+        Event event = eventRepository.findById(ticket.getEvent_id())
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+        if (event.getEvent_date().isBefore(LocalDateTime.now())) {
+            return true; // Remove this ticket if the event date has passed
+        }
+        // Add event details for valid tickets
+        ticketEventDetails.put(
+                ticket.getTicket_id(),
+                event.getEvent_name() + " (Date: " + event.getEvent_date() + ")"
+        );
+        return false;
+    });
+
+    // Add attributes to the model
+    model.addAttribute("loggedInUser", user);
+    model.addAttribute("myTickets", myTickets);
+    model.addAttribute("ticketEventDetails", ticketEventDetails);
+    return "myTicketsPage";
+}
     @GetMapping("/{eventId}/Tickets/{ticketId}/resell")
     public String resellTicket(@PathVariable int eventId,
             @PathVariable int ticketId,
