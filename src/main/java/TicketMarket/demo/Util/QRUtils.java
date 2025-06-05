@@ -27,18 +27,33 @@ public class QRUtils {
             int pageCount = document.getNumberOfPages();
 
             for (int page = 0; page < pageCount; page++) {
-                // render at 300 DPI for good QR fidelity
-                BufferedImage image = renderer.renderImageWithDPI(page, 300);
+                // Log memory usage and page processing
+                System.out.println("Processing page: " + (page + 1) + " of " + pageCount);
+                System.out.println("Memory usage before rendering: " + Runtime.getRuntime().totalMemory() / (1024 * 1024) + " MB");
+
+                // Render at 150 DPI to reduce memory usage
+                BufferedImage image = renderer.renderImageWithDPI(page, 150);
+
+                // Attempt to decode QR code
                 String qrText = decodeQRCode(image);
+
+                // Release memory for the rendered image
+                image.flush();
+
                 if (qrText != null) {
                     return qrText;
                 }
+
+                // Log memory usage after processing
+                System.out.println("Memory usage after rendering: " + Runtime.getRuntime().totalMemory() / (1024 * 1024) + " MB");
             }
         } catch (IOException e) {
-            // I/O error reading PDF
+            // Log I/O error
+            System.err.println("Error reading PDF: " + e.getMessage());
             e.printStackTrace();
         }
-        // no QR found
+
+        // No QR code found
         return null;
     }
     public static String extractQRCodeFromImage(Path imagePath) throws IOException {
