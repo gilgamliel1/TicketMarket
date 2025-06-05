@@ -34,7 +34,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
 
 @RequestMapping("/event")
 @Controller
@@ -550,13 +549,12 @@ public String processGenerateTickets(
         }
 
         if (!ticket.isFor_sale()) {
-            model.addAttribute("error", "This ticket is not for sale anymore.");
+            model.addAttribute("error", "This ticket is not for sale.");
             model.addAttribute("ticket", ticket);
             model.addAttribute("event", event);
             model.addAttribute("loggedInUser", buyer); // Ensure the user data is added back
             return "buyTicketPage";
         }
-
         // Process the ticket purchase
         if (ticket.isGenerated_by_us()) {
             processBuyingOurTicket(buyer, seller, ticket, event);
@@ -645,24 +643,17 @@ public String processGenerateTickets(
 
         List<Ticket> myTickets = ticketRepository.findBySellerId(user.getUser_id());
         Map<Integer, String> ticketEventDetails = new HashMap<>();
-        List<Ticket> validTickets = new ArrayList<>();
-
         for (Ticket ticket : myTickets) {
             Event event = eventRepository.findById(ticket.getEvent_id())
                     .orElseThrow(() -> new RuntimeException("Event not found"));
-
-            // Check if the event date has not passed
-            if (event.getEvent_date().isAfter(LocalDateTime.now())) {
-                validTickets.add(ticket);
-                ticketEventDetails.put(
-                        ticket.getTicket_id(),
-                        event.getEvent_name() + " (Date: " + event.getEvent_date() + ")");
-            }
+            ticketEventDetails.put(
+                    ticket.getTicket_id(),
+                    event.getEvent_name() + " (Date: " + event.getEvent_date() + ")");
         }
 
-        // Add the logged-in user so Thymeleaf can resolve ${loggedInUser}
+        // ← Add the logged-in user so Thymeleaf can resolve ${loggedInUser}
         model.addAttribute("loggedInUser", user);
-        model.addAttribute("myTickets", validTickets);
+        model.addAttribute("myTickets", myTickets);
         model.addAttribute("ticketEventDetails", ticketEventDetails);
         return "myTicketsPage";
     }
