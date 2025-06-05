@@ -546,8 +546,7 @@ public String processGenerateTickets(
             model.addAttribute("error", "No User Found!");
             return "redirect:/signin";
         }
-
-        if (ticketRepository.isTicketExists(TicketId)) {
+        if (!ticketRepository.isTicketExists(TicketId)) {
             model.addAttribute("error", "Ticket does not exist.");
             return "redirect:/event/" + eventId + "/Tickets";
         }
