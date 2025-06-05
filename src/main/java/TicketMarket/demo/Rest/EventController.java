@@ -771,23 +771,23 @@ public String myTickets(HttpSession session, Model model) {
         userRepository.save(seller);
     }
 
-    @PostMapping("/myTickets/{ticketId}/delete")
-    public String deleteTicket(@PathVariable int ticketId, HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loggedInUser");
-        if (user == null) {
-            model.addAttribute("error", "No user found!");
-            return "redirect:/signin";
-        }
+    // @PostMapping("/myTickets/{ticketId}/delete")
+    // public String deleteTicket(@PathVariable int ticketId, HttpSession session, Model model) {
+    //     User user = (User) session.getAttribute("loggedInUser");
+    //     if (user == null) {
+    //         model.addAttribute("error", "No user found!");
+    //         return "redirect:/signin";
+    //     }
 
-        Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+    //     Ticket ticket = ticketRepository.findById(ticketId)
+    //             .orElseThrow(() -> new RuntimeException("Ticket not found"));
 
-        if (ticket.getSeller_id() != user.getUser_id()) {
-            model.addAttribute("error", "You are not authorized to delete this ticket.");
-            return "redirect:/myTickets";
-        }
+    //     if (ticket.getSeller_id() != user.getUser_id()) {
+    //         model.addAttribute("error", "You are not authorized to delete this ticket.");
+    //         return "redirect:/myTickets";
+    //     }
 
-        ticketRepository.delete(ticket);
-        return "redirect:/myTickets";
-    }
+    //     ticketRepository.delete(ticket);
+    //     return "redirect:/myTickets";
+    // }
 }
