@@ -290,22 +290,29 @@ public String processNewEventTicket(
         HttpSession session,
         Model model
 ) {
+    System.out.println("Step 1: Starting processNewEventTicket");
+
     // 1) Authenticate
     User user = (User) session.getAttribute("loggedInUser");
     if (user == null) {
+        System.out.println("Step 2: User not authenticated");
         return "redirect:/signin";
     }
+    System.out.println("Step 2: User authenticated: " + user.getUser_name());
 
     // 2) Load event
     Event event = eventRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Event not found"));
     model.addAttribute("event", event);
+    System.out.println("Step 3: Event loaded: " + event.getEvent_name());
 
     // 3) Prevent duplicate publication
     if (!ticketRepository.findTicketsBySellerIdAndEventId(user.getUser_id(), id).isEmpty()) {
+        System.out.println("Step 4: Duplicate ticket detected");
         model.addAttribute("error", "You’ve already published a ticket for this event.");
         return "newEventTicketForm";
     }
+    System.out.println("Step 4: No duplicate ticket detected");
 
     // 4) Parse & validate price
     int price;
@@ -313,41 +320,53 @@ public String processNewEventTicket(
         price = Integer.parseInt(http.getParameter("price"));
         if (price < 0) throw new NumberFormatException();
     } catch (NumberFormatException e) {
+        System.out.println("Step 5: Invalid price");
         model.addAttribute("error", "Please enter a valid positive price.");
         return "newEventTicketForm";
     }
+    System.out.println("Step 5: Price validated: " + price);
 
     // 5) Read description
     String description = http.getParameter("description");
+    System.out.println("Step 6: Description read: " + description);
 
     // 6) Handle serialKey – either from text field or from uploaded file
     String serialKey = http.getParameter("serialKey");
+    System.out.println("Step 7: Serial key from form: " + serialKey);
 
     if (file != null && !file.isEmpty()) {
+        System.out.println("Step 8: File uploaded: " + file.getOriginalFilename());
         String contentType = file.getContentType();
         try {
             // write to a temp file
             Path tmp = Files.createTempFile("ticket_upload_", contentType.startsWith("image/") ? ".img" : ".pdf");
             file.transferTo(tmp.toFile());
+            System.out.println("Step 9: File saved to temp location: " + tmp);
 
             if ("application/pdf".equals(contentType)) {
                 serialKey = QRUtils.extractQRCodeFromPDF(tmp);
+                System.out.println("Step 10: QR code extracted from PDF: " + serialKey);
             }
             else if (contentType != null && contentType.startsWith("image/")) {
                 serialKey = QRUtils.extractQRCodeFromImage(tmp);
+                System.out.println("Step 10: QR code extracted from image: " + serialKey);
             }
             else {
+                System.out.println("Step 10: Invalid file type: " + contentType);
                 model.addAttribute("error", "Only PDF or image (JPG/PNG) files may be uploaded.");
                 return "newEventTicketForm";
             }
 
             Files.deleteIfExists(tmp);
+            System.out.println("Step 11: Temp file deleted");
 
             if (serialKey == null) {
+                System.out.println("Step 12: No QR code found in the uploaded file");
                 model.addAttribute("error", "No QR code found in the uploaded file.");
                 return "newEventTicketForm";
             }
         } catch (IOException ex) {
+            System.out.println("Step 13: IOException occurred: " + ex.getMessage());
             model.addAttribute("error", "Failed to process the uploaded file.");
             return "newEventTicketForm";
         }
@@ -355,9 +374,11 @@ public String processNewEventTicket(
 
     // 7) Check serialKey uniqueness
     if (serialKey == null || ticketRepository.isSerialKeyAlredayExists(serialKey)) {
+        System.out.println("Step 14: Serial key is not unique or null");
         model.addAttribute("error", "That QR code has already been used.");
         return "newEventTicketForm";
     }
+    System.out.println("Step 14: Serial key validated: " + serialKey);
 
     // 8) Save
     Ticket ticket = new Ticket(
@@ -370,6 +391,7 @@ public String processNewEventTicket(
         false   // is_sold
     );
     ticketRepository.save(ticket);
+    System.out.println("Step 15: Ticket saved: " + ticket.getTicket_id());
 
     return "ticketCreateSuccess";
 }
