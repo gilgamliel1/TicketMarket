@@ -548,6 +548,14 @@ public String processGenerateTickets(
             return "buyTicketPage";
         }
 
+        if (!ticket.isFor_sale()) {
+            model.addAttribute("error", "This ticket is not for sale anymore.");
+            model.addAttribute("ticket", ticket);
+            model.addAttribute("event", event);
+            model.addAttribute("loggedInUser", buyer); // Ensure the user data is added back
+            return "buyTicketPage";
+        }
+
         // Process the ticket purchase
         if (ticket.isGenerated_by_us()) {
             processBuyingOurTicket(buyer, seller, ticket, event);
