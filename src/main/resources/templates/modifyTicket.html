@@ -130,7 +130,8 @@
             <button type="button" class="delete-btn"
                     onclick="setActionAndSubmit('delete')">Delete Ticket</button>
             <button type="button" class="not-for-sale-btn"
-                    onclick="setActionAndSubmit('not_for_sale')">Set Not For Sale</button>
+                    onclick="setActionAndSubmit('not_for_sale')"
+                    th:if="${event.generated_by_us}">Set Not For Sale</button>
             <button type="submit" class="modify-btn">Modify Ticket</button>
         </div>
     </form>
