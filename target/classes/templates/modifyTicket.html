@@ -127,6 +127,7 @@
         </div>
 
         <div class="btn-container">
+            <!-- Note: Once you delete a ticket, it cannot be recovered. -->
             <button type="button" class="delete-btn"
                     onclick="setActionAndSubmit('delete')">Delete Ticket</button>
             <button type="button" class="not-for-sale-btn"
@@ -140,6 +141,9 @@
     <div class="btn-container">
         <a th:href="@{'/event/' + ${event.event_id} + '/Tickets'}" class="back-btn">Back to Tickets</a>
     </div>
+
+    <!-- Recovery Note -->
+    <p style="color: red; font-weight: bold;">Note: Once you delete a ticket, it cannot be recovered.</p>
 </div>
 <script>
     function setActionAndSubmit(action) {
